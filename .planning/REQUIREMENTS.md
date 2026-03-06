@@ -68,27 +68,27 @@
 
 | Requirement | Phase | Status |
 |-|-|-|
-| ACCT-01 | -- | Pending |
-| ACCT-02 | -- | Pending |
-| ACCT-03 | -- | Pending |
-| ACCT-04 | -- | Pending |
-| BULK-01 | -- | Pending |
-| BULK-02 | -- | Pending |
-| BULK-03 | -- | Pending |
-| VISION-01 | -- | Pending |
-| VISION-02 | -- | Pending |
-| VISION-03 | -- | Pending |
-| BANNER-01 | -- | Pending |
-| BANNER-02 | -- | Pending |
-| BANNER-03 | -- | Pending |
-| SOCIAL-01 | -- | Pending |
-| SOCIAL-02 | -- | Pending |
+| ACCT-01 | Phase 1 | Pending |
+| ACCT-02 | Phase 1 | Pending |
+| ACCT-03 | Phase 1 | Pending |
+| ACCT-04 | Phase 1 | Pending |
+| BULK-01 | Phase 2 | Pending |
+| VISION-01 | Phase 2 | Pending |
+| VISION-02 | Phase 2 | Pending |
+| VISION-03 | Phase 2 | Pending |
+| BANNER-01 | Phase 3 | Pending |
+| BANNER-02 | Phase 3 | Pending |
+| BANNER-03 | Phase 3 | Pending |
+| BULK-02 | Phase 4 | Pending |
+| BULK-03 | Phase 4 | Pending |
+| SOCIAL-01 | Phase 5 | Pending |
+| SOCIAL-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after initial definition*
+*Last updated: 2026-03-06 after roadmap creation*
