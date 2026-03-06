@@ -38,6 +38,19 @@ Dealers get professional, AI-labeled photo banners for their entire inventory in
 - Pricing/billing/Stripe — figure out after product validation
 - Mobile app — web-first
 
+## Current Milestone: v1.0 AI Photo Banner MVP
+
+**Goal:** Deliver the full AI photo banner pipeline — upload, AI vision analysis, banner generation with templates, social ad creation, bulk processing, and dealer accounts.
+
+**Target features:**
+- AI vision photo classification + banner text generation
+- Banner overlay system with preset templates
+- Dealer accounts with branding
+- Bulk upload and processing
+- Social media ad creation with Nano Banana
+- VIN decode enrichment
+- Bulk download
+
 ## Context
 
 - Built on proven concept: we just manually created banners for a 2014 Corvette Stingray (stock RA50652) using Gemini vision + Nano Banana + Pillow, confirming the technical approach works
@@ -67,4 +80,4 @@ Dealers get professional, AI-labeled photo banners for their entire inventory in
 | Nano Banana for social ad generation | Proven in our Corvette test — good quality for background swaps and dramatic ad layouts | -- Pending |
 
 ---
-*Last updated: 2026-03-06 after initialization*
+*Last updated: 2026-03-06 after milestone v1.0 started*
