@@ -93,39 +93,68 @@ ABSOLUTE RULES:
 3. Each photo's banner_text must be UNIQUE — no two photos share the same text
 4. banner_text: MAX 40 characters, ALL CAPS, pipe-separated (e.g. "AWD | HEATED SEATS | LEATHER")
 5. If you can see or confirm a hot-button feature, PRIORITIZE it over generic descriptions
+6. NEVER use profanity or abbreviations that could be misread as profanity
+7. Every word in banner_text must be a SPECIFIC, SEARCHABLE feature or trust signal — not a description of the photo itself
 
 HOT-BUTTON FEATURES (prioritize these when confirmed):
 ${SELLING_POINT_HINTS.join(', ')}
 
+=== BANNED PHRASES — NEVER USE THESE ===
+These are FILLER that describes the photo instead of selling the car. If you catch yourself writing any of these, STOP and replace with a real feature:
+- "SLEEK REAR DESIGN", "BOLD FRONT STYLING", "ELEGANT SIDE VIEW", "SLEEK PROFILE"
+- "DRIVER-FOCUSED INTERIOR", "COMFORTABLE REAR CABIN", "SPACIOUS TRUNK"
+- "GENEROUS CARGO SPACE", "MODERN DASHBOARD", "STYLISH DESIGN"
+- "SHARP DESIGN", "CLEAN LINES", "PREMIUM LOOK", "ELEGANT DESIGN"
+- "FRONT PASSENGER SEAT", "REAR SEAT VIEW", "SIDE VIEW"
+- Any phrase that describes WHAT the photo shows rather than a FEATURE the car has
+
+=== BANNED OBVIOUS FEATURES — EVERY CAR HAS THESE ===
+Never waste banner space on: POWER WINDOWS, POWER LOCKS, CUP HOLDERS, SEAT BELTS, AIR CONDITIONING, FLOOR MATS, SUN VISORS, DOME LIGHT, GLOVE BOX, TRUNK RELEASE, MULTI-FUNCTION STEERING WHEEL
+
+=== THE TEST ===
+Before writing banner_text, ask: "Would a buyer search for this on AutoTrader?"
+- "AWD" → YES (buyers filter by this)
+- "HEATED SEATS" → YES (buyers search for this)
+- "COMFORTABLE REAR CABIN" → NO (nobody types this)
+- "POWER WINDOWS" → NO (every car has this)
+- "CHROME TRIM" → NO (not a search term)
+
 PHOTO-SPECIFIC BANNER STRATEGY:
 - Photo 0 (hero shot): Vehicle's TOP 2-3 confirmed selling points (e.g. "AWD | LEATHER | LOW MILES")
-- Exterior photos: drivetrain, wheels, LED lights, body style, tow package — things visible
-- Interior/dashboard: infotainment (CarPlay/Android Auto), leather, heated/cooled seats, navigation
-- Rear/trunk: cargo space, power liftgate, third row
-- Engine bay: engine specs, turbo, horsepower if known
-- Detail shots: specific feature visible (e.g. "HEATED SEAT BUTTON", "B&O SPEAKER")
+- Exterior photos: drivetrain (AWD/4WD/FWD), LED HEADLIGHTS, PREMIUM WHEELS, TOW PACKAGE — confirmed features
+- Interior/dashboard: CARPLAY | LEATHER | HEATED SEATS | NAVIGATION | PANO ROOF — real features
+- Rear/trunk: POWER LIFTGATE, CARGO LINER, SPLIT-FOLD SEATS — functional features
+- Engine bay: TURBO, ECOBOOST, V6, HYBRID — engine specs
+- Detail shots: Read the BRAND NAME on what you see (e.g. "HARMAN KARDON", "B&O", "BOSE") — do NOT generically say "PREMIUM AUDIO" if you can read the brand. Look for seat control buttons and name the feature: "HEATED SEATS" not "SEAT CONTROLS", "MEMORY SEATS" not "POWER ADJUSTABLE SEATING"
 
 WHAT MAKES GREAT BANNER TEXT:
-- "AWD | PANO ROOF | HEATED SEATS" (specific selling points)
-- "ECOBOOST | LEATHER | CARPLAY" (features customers search for)
+- "AWD | PANO ROOF | HEATED SEATS" (specific, searchable selling points)
+- "ECOBOOST | LEATHER | CARPLAY" (features customers filter by)
 - "ONE OWNER | CLEAN TITLE | 22K MI" (trust signals)
+- "HARMAN KARDON | HEATED SEATS" (brand name from detail shot)
+- "LED HEADLIGHTS | M SPORT PKG" (visible confirmed features)
 
-WHAT MAKES BAD BANNER TEXT:
-- "ELEGANT SIDE VIEW | CHROME ACCENTS" (describes the photo, not selling points)
-- "MODERN DASHBOARD | WOODGRAIN TRIM" (generic, not compelling)
+WHAT MAKES BAD BANNER TEXT (NEVER DO THIS):
+- "ELEGANT SIDE VIEW | CHROME ACCENTS" (describes the photo angle)
+- "MODERN DASHBOARD | WOODGRAIN TRIM" (generic, not searchable)
 - "BOLD FRONT STYLING | LED HEADLIGHTS" (half filler, half feature)
+- "COMFORTABLE REAR CABIN" (vague, could be any car)
+- "DRIVER-FOCUSED INTERIOR" (marketing fluff, not a feature)
+- "POWER WINDOW CONTROLS" (every car has this)
+- "MULTI-FUNCTION STEERING WHEEL" (every modern car has this)
 
 When you see an interior shot, look for:
-- Touchscreen size, CarPlay/Android Auto icons
-- Seat material (leather vs cloth), heated/cooled seat buttons
-- Steering wheel controls, heated wheel button
+- Touchscreen size, CarPlay/Android Auto icons on the screen
+- Seat material (leather vs cloth), heated/cooled seat BUTTONS specifically
+- Brand names on speakers (Harman Kardon, B&O, Bose, JBL, Revel)
 - Panoramic roof visible through glass
+- Digital instrument cluster / heads-up display
 
 When you see an exterior shot, look for:
-- Badge/emblem indicating trim level or AWD
-- LED headlight/taillight signature
+- Badge/emblem indicating trim level or AWD/4WD
+- LED headlight/taillight design
 - Roof rails, tow hitch, premium wheels
-- Body style cues (sport, luxury)`
+- Model-specific package badges (M Sport, AMG Line, F Sport, etc.)`
 
   if (vehicleContext) {
     const specs = []

@@ -13,6 +13,36 @@ interface BannerRequest {
   featuresList?: string[]
 }
 
+// Profanity + garbage filter — catches truncation artifacts and inappropriate text
+const BANNED_WORDS = [
+  'shit', 'fuck', 'damn', 'ass', 'hell', 'bitch', 'crap', 'dick', 'piss',
+]
+const FILLER_PHRASES = [
+  'SLEEK REAR DESIGN', 'BOLD FRONT STYLING', 'ELEGANT SIDE VIEW',
+  'SLEEK PROFILE', 'DRIVER-FOCUSED', 'COMFORTABLE REAR',
+  'SPACIOUS TRUNK', 'GENEROUS CARGO', 'MODERN DASHBOARD',
+  'STYLISH DESIGN', 'PREMIUM LOOK', 'ELEGANT DESIGN',
+  'BOLD STYLING', 'SHARP DESIGN', 'CLEAN LINES',
+]
+
+function sanitizeBannerText(text: string): string {
+  let cleaned = text.toUpperCase().trim()
+
+  // Check each word for profanity
+  const words = cleaned.split(/[\s|]+/)
+  for (const word of words) {
+    if (BANNED_WORDS.some(b => word.toLowerCase().includes(b))) {
+      // Remove the offending segment
+      cleaned = cleaned.replace(new RegExp(`\\|?\\s*${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\|?`, 'gi'), ' | ')
+    }
+  }
+
+  // Clean up orphaned pipes
+  cleaned = cleaned.replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '').replace(/\s*\|\s*\|\s*/g, ' | ').trim()
+
+  return cleaned || 'QUALITY PRE-OWNED'
+}
+
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
@@ -31,7 +61,7 @@ function darkenHex(hex: string, amount: number): string {
 }
 
 function createTopBannerSvg(width: number, height: number, text: string, brandColor: string, textColor: string): Buffer {
-  const fontSize = Math.min(Math.round(height * 0.55), Math.max(18, Math.floor(width / (text.length * 0.6))))
+  const fontSize = Math.min(Math.round(height * 0.48), Math.max(18, Math.floor(width / (text.length * 0.55))))
   const darkerColor = darkenHex(brandColor, 0.25)
 
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -62,11 +92,11 @@ function createBottomBannerSvg(
   phone: string,
   brandColor: string,
 ): Buffer {
-  const accentHeight = Math.max(2, Math.round(height * 0.06))
-  const nameFontSize = Math.round(height * 0.3)
-  const phoneFontSize = Math.round(height * 0.22)
-  const shipFontSize = Math.round(height * 0.28)
-  const subFontSize = Math.round(height * 0.2)
+  const accentHeight = Math.max(3, Math.round(height * 0.06))
+  const nameFontSize = Math.round(height * 0.28)
+  const phoneFontSize = Math.round(height * 0.2)
+  const shipFontSize = Math.round(height * 0.26)
+  const subFontSize = Math.round(height * 0.18)
 
   const leftX = 16
   const nameY = accentHeight + nameFontSize + Math.round((height - accentHeight) * 0.15)
@@ -152,8 +182,13 @@ export async function POST(req: Request) {
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer())
     const image = sharp(imgBuffer)
     const metadata = await image.metadata()
-    const width = metadata.width || 1280
-    const height = metadata.height || 960
+    const origWidth = metadata.width || 1280
+    const origHeight = metadata.height || 960
+
+    // Normalize to landscape orientation — ensures consistent banner layout
+    const isPortrait = origHeight > origWidth
+    const width = isPortrait ? Math.max(origWidth, Math.round(origHeight * 1.33)) : origWidth
+    const height = isPortrait ? Math.round(width * 0.75) : origHeight
 
     const brandColor = body.brandColor || '#d4a053'
     const textColor = body.secondaryColor || '#ffffff'
@@ -162,9 +197,14 @@ export async function POST(req: Request) {
       const title = body.mode === 'exterior_features' ? 'EXTERIOR FEATURES' : 'INTERIOR FEATURES'
       const features = body.featuresList || []
 
+      // Resize/pad to normalized dimensions
+      const normalizedPhoto = await sharp(imgBuffer)
+        .resize(width, height, { fit: 'contain', background: { r: 30, g: 30, b: 30 } })
+        .toBuffer()
+
       const overlaySvg = createFeatureOverlaySvg(width, height, title, features.slice(0, 15), brandColor)
 
-      const result = await image
+      const result = await sharp(normalizedPhoto)
         .composite([{ input: overlaySvg, top: 0, left: 0 }])
         .jpeg({ quality: 90 })
         .toBuffer()
@@ -177,20 +217,24 @@ export async function POST(req: Request) {
       })
     }
 
-    // Standard banner mode — keep original dimensions, shrink photo to fit
-    const topHeight = Math.round(height * 0.07)
-    const bottomHeight = Math.round(height * 0.06)
+    // Standard banner mode
+    // Taller top bar (9%) to cover existing dealer watermarks on source photos
+    const topHeight = Math.round(height * 0.09)
+    const bottomHeight = Math.round(height * 0.065)
     const photoHeight = height - topHeight - bottomHeight
 
-    // Resize the original photo to fit the middle area
+    // Sanitize banner text
+    const cleanText = sanitizeBannerText(body.topText)
+
+    // Resize/fit the original photo into the middle area
     const resizedPhoto = await sharp(imgBuffer)
       .resize(width, photoHeight, { fit: 'cover', position: 'centre' })
       .toBuffer()
 
-    const topSvg = createTopBannerSvg(width, topHeight, body.topText, brandColor, textColor)
+    const topSvg = createTopBannerSvg(width, topHeight, cleanText, brandColor, textColor)
     const bottomSvg = createBottomBannerSvg(width, bottomHeight, body.dealerName, body.phone || '', brandColor)
 
-    // Create canvas at ORIGINAL dimensions — no aspect ratio change
+    // Create canvas at normalized dimensions
     const canvas = sharp({
       create: {
         width,
