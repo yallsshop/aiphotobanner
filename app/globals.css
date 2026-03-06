@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #e8e4df;
+  --surface: #141414;
+  --surface-2: #1a1a1a;
+  --surface-3: #222222;
+  --border: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --amber: #d4a053;
+  --amber-light: #e8b96a;
+  --amber-dark: #b8862f;
+  --amber-glow: rgba(212, 160, 83, 0.15);
+  --amber-glow-strong: rgba(212, 160, 83, 0.3);
+  --muted: #888880;
+  --muted-2: #555550;
+  --danger: #e05252;
+  --success: #4ade80;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-amber: var(--amber);
+  --color-amber-light: var(--amber-light);
+  --color-amber-dark: var(--amber-dark);
+  --color-amber-glow: var(--amber-glow);
+  --color-amber-glow-strong: var(--amber-glow-strong);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+/* Animated gradient — car paint shimmer */
+@keyframes paint-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.paint-shimmer {
+  background: linear-gradient(
+    135deg,
+    var(--amber-dark) 0%,
+    var(--amber) 25%,
+    var(--amber-light) 50%,
+    var(--amber) 75%,
+    var(--amber-dark) 100%
+  );
+  background-size: 200% 200%;
+  animation: paint-shift 6s ease-in-out infinite;
+}
+
+/* Subtle noise texture overlay */
+.noise-overlay::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Glow effect for primary buttons */
+.btn-amber {
+  background: linear-gradient(135deg, var(--amber-dark), var(--amber));
+  color: #0a0a0a;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px var(--amber-glow);
+}
+
+.btn-amber:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  box-shadow: 0 0 30px var(--amber-glow-strong);
+  transform: translateY(-1px);
+}
+
+/* Input styling */
+.input-dark {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-dark:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-glow);
+  outline: none;
+}
+
+.input-dark::placeholder {
+  color: var(--muted-2);
+}
+
+/* Stagger animation for page elements */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* Sidebar link styling */
+.nav-link {
+  transition: all 0.2s ease;
+  border-left: 2px solid transparent;
+}
+
+.nav-link:hover {
+  background: var(--surface-2);
+  border-left-color: var(--amber);
+}
+
+.nav-link.active {
+  background: var(--amber-glow);
+  border-left-color: var(--amber);
+  color: var(--amber-light);
+}
+
+/* Color swatch picker */
+.color-swatch {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-2);
+}
