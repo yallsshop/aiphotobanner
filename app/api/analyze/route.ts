@@ -27,6 +27,19 @@ const BATCH_ANALYSIS_SCHEMA = {
             description: 'Features actually visible in this specific photo',
           },
           condition_notes: { type: Type.STRING },
+          enhancement_suggestions: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                action: { type: Type.STRING, description: 'Short label: "Remove paper mats", "Replace background", "Enhance lighting", "Remove clutter", etc.' },
+                instruction: { type: Type.STRING, description: 'Detailed AI editing instruction to send to an image generation model. Be specific about what to change and what to preserve.' },
+                priority: { type: Type.STRING, description: 'high = significantly improves listing quality, medium = nice improvement, low = minor polish' },
+              },
+              required: ['action', 'instruction', 'priority'],
+            },
+            description: 'Suggested AI photo enhancements for this image. Look for: paper floor mats, messy backgrounds, poor lighting, dealer stickers/plates, clutter in frame, dark interiors. Only suggest if there is something genuinely worth fixing.',
+          },
         },
         required: ['index', 'classification', 'confidence', 'banner_text', 'features_visible'],
       },
@@ -216,6 +229,31 @@ RULES:
     prompt += `\n\nDEALERSHIP REQUIRED TEXT — You MUST naturally incorporate the following into the description:\n"${descriptionMustHaves.trim()}"`
   }
 
+  prompt += `\n\n=== PHOTO ENHANCEMENT SUGGESTIONS ===
+For each photo, check if AI image editing could improve the listing quality. Add enhancement_suggestions ONLY when there's a real issue worth fixing. Common things to look for:
+
+HIGH priority:
+- Paper floor mats / "THANKS FOR COMING IN" dealer mats visible — suggest removing them
+- Messy or cluttered backgrounds (other cars, trash, people walking by)
+- Dark/underexposed interior shots — suggest brightening
+
+MEDIUM priority:
+- Plain/ugly parking lot background on exterior shots — suggest replacing with clean showroom or studio backdrop
+- Reflections of photographer or equipment visible
+- Minor clutter in trunk/cargo area (bags, tools)
+
+LOW priority:
+- Slightly dull paint that could be enhanced
+- Minor color/exposure corrections
+
+For each suggestion, write a DETAILED instruction that could be sent directly to an AI image editor. Example:
+- action: "Remove paper mats"
+  instruction: "Remove the white paper floor mats from the driver and passenger footwells. Replace them with clean, dark carpeted floor that matches the rest of the interior. Keep everything else exactly the same."
+- action: "Replace background"
+  instruction: "Replace the parking lot background with a clean, professional automotive studio backdrop — neutral gray gradient with soft lighting. Keep the vehicle exactly as-is including reflections on the paint."
+
+Do NOT suggest enhancements for photos that already look clean and professional.`
+
   return prompt
 }
 
@@ -284,7 +322,7 @@ export async function POST(req: Request) {
 
     const parsed = JSON.parse(response.text || '{}')
 
-    const results = parsed.photos?.map((p: { index: number; classification: string; confidence: number; banner_text: string; features_visible: string[]; condition_notes?: string }) => ({
+    const results = parsed.photos?.map((p: { index: number; classification: string; confidence: number; banner_text: string; features_visible: string[]; condition_notes?: string; enhancement_suggestions?: { action: string; instruction: string; priority: string }[] }) => ({
       ref: imageData[p.index]?.ref,
       analysis: {
         classification: p.classification,
@@ -292,6 +330,7 @@ export async function POST(req: Request) {
         banner_text: p.banner_text,
         features: p.features_visible,
         condition_notes: p.condition_notes,
+        enhancement_suggestions: p.enhancement_suggestions || [],
       },
     })) || []
 

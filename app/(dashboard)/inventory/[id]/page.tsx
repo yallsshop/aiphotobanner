@@ -17,12 +17,19 @@ interface Vehicle {
   photo_status?: string; processed_photo_urls?: string[]
 }
 
+interface EnhancementSuggestion {
+  action: string
+  instruction: string
+  priority: string
+}
+
 interface PhotoAnalysis {
   classification: string
   confidence: number
   banner_text: string
   features: string[]
   condition_notes?: string
+  enhancement_suggestions?: EnhancementSuggestion[]
 }
 
 interface AnalyzedPhoto {
@@ -32,6 +39,8 @@ interface AnalyzedPhoto {
   banneredUrl?: string
   banneredBlob?: Blob
   creating?: boolean
+  enhancedUrl?: string
+  enhancing?: boolean
 }
 
 interface DealerInfo {
@@ -60,6 +69,8 @@ export default function VehicleDetailPage() {
   const [savedToCloud, setSavedToCloud] = useState(false)
   const [seoDescription, setSeoDescription] = useState('')
   const [copiedSeo, setCopiedSeo] = useState(false)
+  const [enhancePrompt, setEnhancePrompt] = useState('')
+  const [enhanceModel, setEnhanceModel] = useState<'flash' | 'pro'>('flash')
 
   const supabase = createClient()
 
@@ -318,6 +329,40 @@ export default function VehicleDetailPage() {
     }
   }
 
+  async function handleEnhance(photoIdx: number, instruction: string) {
+    const photo = photos[photoIdx]
+    if (!photo) return
+
+    setPhotos(prev => prev.map((p, i) => i === photoIdx ? { ...p, enhancing: true } : p))
+    setError('')
+
+    try {
+      const res = await fetch('/api/enhance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: photo.url,
+          instruction,
+          model: enhanceModel,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Enhancement failed')
+      }
+
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      setPhotos(prev => prev.map((p, i) =>
+        i === photoIdx ? { ...p, enhancedUrl: blobUrl, enhancing: false } : p
+      ))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Enhancement failed')
+      setPhotos(prev => prev.map((p, i) => i === photoIdx ? { ...p, enhancing: false } : p))
+    }
+  }
+
   const classColors: Record<string, string> = {
     exterior_front: 'bg-blue-500/20 text-blue-400',
     exterior_rear: 'bg-blue-500/20 text-blue-400',
@@ -499,6 +544,74 @@ export default function VehicleDetailPage() {
                   ))}
                 </div>
               </div>
+
+              {/* AI Enhance — Experimental */}
+              {(selected.analysis.enhancement_suggestions?.length || 0) > 0 && (
+                <div className="border-t border-border pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h4 className="text-xs font-600 text-violet-400">AI Enhance</h4>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 text-violet-400 border border-violet-500/20">EXPERIMENTAL</span>
+                  </div>
+                  <div className="space-y-2">
+                    {selected.analysis.enhancement_suggestions!.map((sug, j) => (
+                      <div key={j} className="flex items-center justify-between gap-2 bg-surface-2 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${sug.priority === 'high' ? 'bg-red-400' : sug.priority === 'medium' ? 'bg-amber' : 'bg-muted-2'}`} />
+                          <span className="text-xs text-foreground truncate">{sug.action}</span>
+                        </div>
+                        <button
+                          onClick={() => handleEnhance(selectedPhoto, sug.instruction)}
+                          disabled={selected.enhancing}
+                          className="flex-shrink-0 px-3 py-1 rounded-md text-[11px] font-medium bg-violet-500/15 text-violet-400 hover:bg-violet-500/25 border border-violet-500/20 transition-colors disabled:opacity-50"
+                        >
+                          {selected.enhancing ? 'Working...' : 'Apply'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom enhance prompt */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xs text-muted">Custom AI edit</p>
+                  <select
+                    value={enhanceModel}
+                    onChange={(e) => setEnhanceModel(e.target.value as 'flash' | 'pro')}
+                    className="text-[10px] bg-surface-2 border border-border rounded px-1.5 py-0.5 text-muted"
+                  >
+                    <option value="flash">Flash (fast)</option>
+                    <option value="pro">Pro (quality)</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={enhancePrompt}
+                    onChange={(e) => setEnhancePrompt(e.target.value)}
+                    className="input-dark flex-1 px-3 py-2 rounded-lg text-xs"
+                    placeholder="e.g. Remove paper mats, brighten interior, replace background..."
+                  />
+                  <button
+                    onClick={() => { if (enhancePrompt.trim()) handleEnhance(selectedPhoto, enhancePrompt.trim()) }}
+                    disabled={!enhancePrompt.trim() || selected.enhancing}
+                    className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium bg-violet-500/15 text-violet-400 hover:bg-violet-500/25 border border-violet-500/20 transition-colors disabled:opacity-50"
+                  >
+                    {selected.enhancing ? 'Working...' : 'Enhance'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Enhanced result */}
+              {selected.enhancedUrl && (
+                <div className="border-t border-border pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-violet-400 font-medium">Enhanced Result</p>
+                    <a href={selected.enhancedUrl} download={`enhanced_${selectedPhoto}.png`} className="text-[11px] text-amber hover:text-amber-light transition-colors">Download</a>
+                  </div>
+                  <img src={selected.enhancedUrl} alt="Enhanced" className="w-full rounded-lg border border-violet-500/20" />
+                </div>
+              )}
             </div>
           )}
 
