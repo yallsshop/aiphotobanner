@@ -26,15 +26,19 @@ interface Vehicle {
   photo_urls: string[]
   highway_mpg: number
   city_mpg: number
+  photo_status?: string
+  processed_at?: string
 }
 
 type ViewMode = 'grid' | 'table'
+type StatusFilter = 'all' | 'pending' | 'processed'
 
 export default function InventoryPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [search, setSearch] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -87,7 +91,15 @@ export default function InventoryPage() {
     }
   }
 
+  const pendingCount = vehicles.filter(v => !v.photo_status || v.photo_status === 'pending').length
+  const processedCount = vehicles.filter(v => v.photo_status === 'processed').length
+
   const filtered = vehicles.filter(v => {
+    // Status filter
+    if (statusFilter === 'pending' && v.photo_status === 'processed') return false
+    if (statusFilter === 'processed' && v.photo_status !== 'processed') return false
+
+    // Search
     if (!search) return true
     const q = search.toLowerCase()
     return (
@@ -100,8 +112,14 @@ export default function InventoryPage() {
   })
 
   function formatMiles(n: number) {
-    return n?.toLocaleString() ?? '—'
+    return n?.toLocaleString() ?? '\u2014'
   }
+
+  const tabs: { key: StatusFilter; label: string; count: number }[] = [
+    { key: 'all', label: 'All', count: vehicles.length },
+    { key: 'pending', label: 'Pending', count: pendingCount },
+    { key: 'processed', label: 'Processed', count: processedCount },
+  ]
 
   return (
     <div>
@@ -149,6 +167,30 @@ export default function InventoryPage() {
         </div>
       </div>
 
+      {/* Status Tabs */}
+      <div className="animate-fade-up flex gap-1 mb-4 bg-surface border border-border rounded-lg p-1 w-fit" style={{ animationDelay: '50ms' }}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setStatusFilter(tab.key)}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              statusFilter === tab.key
+                ? tab.key === 'processed'
+                  ? 'bg-green-500/15 text-green-400'
+                  : tab.key === 'pending'
+                    ? 'bg-amber-glow text-amber'
+                    : 'bg-surface-3 text-foreground'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            {tab.label}
+            <span className={`ml-2 text-xs ${statusFilter === tab.key ? 'opacity-100' : 'opacity-50'}`}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* Search */}
       <div className="animate-fade-up mb-6" style={{ animationDelay: '100ms' }}>
         <input
@@ -175,6 +217,10 @@ export default function InventoryPage() {
           <p className="text-muted text-sm max-w-md mx-auto mb-4">
             Import your DMS feed JSON to see your vehicles here
           </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="animate-fade-up bg-surface border border-border rounded-xl p-12 text-center">
+          <p className="text-muted">No vehicles match your filters</p>
         </div>
       ) : viewMode === 'grid' ? (
         /* Grid View */
@@ -207,6 +253,18 @@ export default function InventoryPage() {
                     {v.photo_urls.length} photos
                   </div>
                 )}
+                {/* Processing status badge */}
+                <div className="absolute top-2 left-2">
+                  {v.photo_status === 'processed' ? (
+                    <span className="text-xs px-2 py-1 rounded-md font-medium bg-green-500/80 text-white">
+                      Processed
+                    </span>
+                  ) : (
+                    <span className="text-xs px-2 py-1 rounded-md font-medium bg-amber/80 text-black">
+                      Pending
+                    </span>
+                  )}
+                </div>
                 {/* Days on market */}
                 {v.dom > 0 && (
                   <div className={`absolute top-2 right-2 text-xs px-2 py-1 rounded-md font-medium ${
@@ -279,6 +337,11 @@ export default function InventoryPage() {
                     <td className="px-4 py-3 text-right text-muted">{v.photo_urls?.length ?? 0}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
+                        {v.photo_status === 'processed' ? (
+                          <span className="text-xs bg-green-500/15 text-green-400 px-1.5 py-0.5 rounded font-medium">Processed</span>
+                        ) : (
+                          <span className="text-xs bg-amber/15 text-amber px-1.5 py-0.5 rounded font-medium">Pending</span>
+                        )}
                         {v.carfax_1_owner && <span className="text-xs bg-green-500/15 text-green-400 px-1.5 py-0.5 rounded">1-Owner</span>}
                         {v.carfax_clean_title && <span className="text-xs bg-blue-500/15 text-blue-400 px-1.5 py-0.5 rounded">Clean</span>}
                       </div>

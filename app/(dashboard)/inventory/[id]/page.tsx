@@ -14,6 +14,7 @@ interface Vehicle {
   cylinders: number; seating: string; highway_mpg: number
   city_mpg: number; dom: number; carfax_1_owner: boolean
   carfax_clean_title: boolean; photo_urls: string[]; vdp_url: string
+  photo_status?: string; processed_photo_urls?: string[]
 }
 
 interface PhotoAnalysis {
@@ -29,6 +30,7 @@ interface AnalyzedPhoto {
   analysis?: PhotoAnalysis
   analyzing?: boolean
   banneredUrl?: string
+  banneredBlob?: Blob
   creating?: boolean
 }
 
@@ -37,6 +39,7 @@ interface DealerInfo {
   logo_url: string | null
   brand_colors: { primary: string; secondary: string }
   phone?: string
+  description_must_haves?: string
 }
 
 export default function VehicleDetailPage() {
@@ -49,10 +52,14 @@ export default function VehicleDetailPage() {
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [creatingBanners, setCreatingBanners] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState(0)
   const [error, setError] = useState('')
   const [editingIdx, setEditingIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
+  const [savedToCloud, setSavedToCloud] = useState(false)
+  const [seoDescription, setSeoDescription] = useState('')
+  const [copiedSeo, setCopiedSeo] = useState(false)
 
   const supabase = createClient()
 
@@ -71,6 +78,10 @@ export default function VehicleDetailPage() {
         !url.includes('/assets/stock/') && !url.includes('transparent')
       )
       setPhotos(realPhotos.map((url: string) => ({ url })))
+
+      if (vehicleRes.data.photo_status === 'processed') {
+        setSavedToCloud(true)
+      }
     }
     if (dealerRes.data) setDealer(dealerRes.data)
     setLoading(false)
@@ -103,6 +114,7 @@ export default function VehicleDetailPage() {
             carfax_1_owner: vehicle.carfax_1_owner, carfax_clean_title: vehicle.carfax_clean_title,
             dom: vehicle.dom,
           },
+          descriptionMustHaves: dealer?.description_must_haves || '',
         }),
       })
 
@@ -114,6 +126,7 @@ export default function VehicleDetailPage() {
       const data = await res.json()
       setExteriorFeatures(data.exterior_features || [])
       setInteriorFeatures(data.interior_features || [])
+      setSeoDescription(data.seo_description || '')
 
       setPhotos(prev => prev.map(p => {
         const result = data.results?.find((r: { ref: string }) => r.ref === p.url)
@@ -148,9 +161,8 @@ export default function VehicleDetailPage() {
             topText: photo.analysis!.banner_text,
             brandColor: dealer.brand_colors?.primary || '#d4a053',
             secondaryColor: dealer.brand_colors?.secondary || '#ffffff',
-            logoUrl: dealer.logo_url,
             dealerName: dealer.name,
-            phone: '',
+            phone: dealer.phone || '',
           }),
         })
 
@@ -159,7 +171,7 @@ export default function VehicleDetailPage() {
         const blob = await res.blob()
         const blobUrl = URL.createObjectURL(blob)
         setPhotos(prev => prev.map(p =>
-          p.url === photo.url ? { ...p, banneredUrl: blobUrl, creating: false } : p
+          p.url === photo.url ? { ...p, banneredUrl: blobUrl, banneredBlob: blob, creating: false } : p
         ))
       }
 
@@ -188,6 +200,7 @@ export default function VehicleDetailPage() {
             url: extPhoto.url,
             analysis: { classification: 'exterior_features', confidence: 1, banner_text: 'EXTERIOR FEATURES', features: exteriorFeatures },
             banneredUrl: blobUrl,
+            banneredBlob: blob,
           }])
         }
       }
@@ -217,6 +230,7 @@ export default function VehicleDetailPage() {
             url: intPhoto.url,
             analysis: { classification: 'interior_features', confidence: 1, banner_text: 'INTERIOR FEATURES', features: interiorFeatures },
             banneredUrl: blobUrl,
+            banneredBlob: blob,
           }])
         }
       }
@@ -224,6 +238,57 @@ export default function VehicleDetailPage() {
       setError(err instanceof Error ? err.message : 'Banner creation failed')
     } finally {
       setCreatingBanners(false)
+    }
+  }
+
+  async function handleSaveProcessed() {
+    if (!vehicle) return
+    setSaving(true)
+    setError('')
+
+    try {
+      const banneredPhotos = photos.filter(p => p.banneredBlob)
+
+      // Convert blobs to base64
+      const photoData = await Promise.all(
+        banneredPhotos.map(async (p, i) => {
+          const arrayBuffer = await p.banneredBlob!.arrayBuffer()
+          const base64 = btoa(
+            new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+          )
+          return {
+            filename: `${vehicle.stock_no || 'photo'}_${i + 1}.jpg`,
+            data: base64,
+          }
+        })
+      )
+
+      const aiAnalysis = {
+        exterior_features: exteriorFeatures,
+        interior_features: interiorFeatures,
+        photos: photos
+          .filter(p => p.analysis)
+          .map(p => ({ url: p.url, ...p.analysis })),
+      }
+
+      const res = await fetch(`/api/inventory/${vehicle.id}/save-processed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: photoData, aiAnalysis }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Save failed')
+      }
+
+      const result = await res.json()
+      setSavedToCloud(true)
+      setVehicle(prev => prev ? { ...prev, photo_status: 'processed', processed_photo_urls: result.urls } : prev)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -282,6 +347,9 @@ export default function VehicleDetailPage() {
         <Link href="/inventory" className="hover:text-amber transition-colors">Inventory</Link>
         <span>/</span>
         <span className="text-foreground">{vehicle.heading}</span>
+        {vehicle.photo_status === 'processed' && (
+          <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-500/15 text-green-400 font-medium">Processed</span>
+        )}
       </div>
 
       {/* Header + Actions */}
@@ -303,6 +371,18 @@ export default function VehicleDetailPage() {
               {creatingBanners ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Creating Banners...</span>
                 : 'Create Banners'}
             </button>
+          )}
+          {hasBannered && !savedToCloud && (
+            <button onClick={handleSaveProcessed} disabled={saving}
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-green-600 hover:bg-green-500 text-white disabled:opacity-50 transition-colors">
+              {saving ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Saving...</span>
+                : 'Save & Mark Processed'}
+            </button>
+          )}
+          {savedToCloud && (
+            <span className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-green-500/15 text-green-400 border border-green-500/20">
+              Saved to Cloud
+            </span>
           )}
           {hasBannered && (
             <button onClick={downloadAll}
@@ -350,7 +430,6 @@ export default function VehicleDetailPage() {
                       {Math.round(selected.analysis.confidence * 100)}%
                     </span>
                   </div>
-                  {/* Banner text preview */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-12 pb-4 px-4">
                     <p className="text-xs text-muted mb-1">Top banner preview:</p>
                     <p className="text-amber-light font-bold tracking-wider">{selected.analysis.banner_text}</p>
@@ -423,6 +502,30 @@ export default function VehicleDetailPage() {
             </div>
           )}
 
+          {/* SEO Description */}
+          {seoDescription && (
+            <div className="mt-6 animate-fade-up bg-surface border border-border rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-[family-name:var(--font-display)] text-sm font-600 text-amber">SEO Description</h3>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(seoDescription)
+                    setCopiedSeo(true)
+                    setTimeout(() => setCopiedSeo(false), 2000)
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    copiedSeo
+                      ? 'bg-green-500/15 text-green-400 border border-green-500/20'
+                      : 'bg-surface-3 text-muted hover:text-foreground border border-border hover:border-amber/30'
+                  }`}
+                >
+                  {copiedSeo ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <p className="text-sm text-muted leading-relaxed">{seoDescription}</p>
+            </div>
+          )}
+
           {/* Feature summaries */}
           {(exteriorFeatures.length > 0 || interiorFeatures.length > 0) && (
             <div className="mt-6 grid grid-cols-2 gap-4">
@@ -432,7 +535,7 @@ export default function VehicleDetailPage() {
                   <ul className="space-y-1">
                     {exteriorFeatures.map((f, i) => (
                       <li key={i} className="text-xs text-muted flex gap-2">
-                        <span className="text-emerald-400">•</span>{f}
+                        <span className="text-emerald-400">{'\u2022'}</span>{f}
                       </li>
                     ))}
                   </ul>
@@ -444,7 +547,7 @@ export default function VehicleDetailPage() {
                   <ul className="space-y-1">
                     {interiorFeatures.map((f, i) => (
                       <li key={i} className="text-xs text-muted flex gap-2">
-                        <span className="text-violet-400">•</span>{f}
+                        <span className="text-violet-400">{'\u2022'}</span>{f}
                       </li>
                     ))}
                   </ul>
@@ -511,6 +614,12 @@ export default function VehicleDetailPage() {
                 <span className="text-muted">Bannered</span>
                 <span className={photos.filter(p => p.banneredUrl).length > 0 ? 'text-amber' : ''}>{photos.filter(p => p.banneredUrl).length}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-muted">Processing</span>
+                <span className={savedToCloud ? 'text-success font-medium' : 'text-muted-2'}>
+                  {savedToCloud ? 'Saved' : vehicle.photo_status === 'processed' ? 'Processed' : 'Pending'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -528,13 +637,16 @@ export default function VehicleDetailPage() {
                 <div className="relative">
                   <div className="h-0.5" style={{ backgroundColor: dealer.brand_colors?.primary || '#d4a053' }} />
                   <div className="h-7 bg-black/80 flex items-center justify-between px-3">
-                    <span className="text-[9px] text-white/80 font-bold">{dealer.name.toUpperCase()}</span>
+                    <div>
+                      <span className="text-[9px] text-white/80 font-bold">{dealer.name.toUpperCase()}</span>
+                      {dealer.phone && <span className="text-[8px] ml-2" style={{ color: dealer.brand_colors?.primary || '#d4a053' }}>{dealer.phone}</span>}
+                    </div>
                     <span className="text-[8px] font-bold" style={{ color: dealer.brand_colors?.primary || '#d4a053' }}>SHIPS NATIONWIDE</span>
                   </div>
                 </div>
               </div>
               <Link href="/settings" className="text-xs text-amber hover:text-amber-light transition-colors mt-3 block">
-                Edit branding →
+                Edit branding
               </Link>
             </div>
           )}

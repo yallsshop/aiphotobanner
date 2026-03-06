@@ -17,22 +17,33 @@ function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-function createTopBannerSvg(width: number, text: string, brandColor: string, textColor: string): Buffer {
-  const height = 64
-  const fontSize = Math.min(36, Math.max(22, Math.floor(width / (text.length * 0.55))))
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+    : { r: 0, g: 0, b: 0 }
+}
+
+function darkenHex(hex: string, amount: number): string {
+  const { r, g, b } = hexToRgb(hex)
+  const darken = (c: number) => Math.max(0, Math.round(c * (1 - amount)))
+  return `rgb(${darken(r)},${darken(g)},${darken(b)})`
+}
+
+function createTopBannerSvg(width: number, height: number, text: string, brandColor: string, textColor: string): Buffer {
+  const fontSize = Math.min(Math.round(height * 0.55), Math.max(18, Math.floor(width / (text.length * 0.6))))
+  const darkerColor = darkenHex(brandColor, 0.25)
 
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${brandColor}" />
-        <stop offset="85%" stop-color="${brandColor}" />
-        <stop offset="100%" stop-color="${brandColor}" stop-opacity="0.85" />
+      <linearGradient id="topGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="${darkerColor}" />
+        <stop offset="50%" stop-color="${brandColor}" />
+        <stop offset="100%" stop-color="${darkerColor}" />
       </linearGradient>
-      <filter id="shadow" x="-2%" y="-5%" width="104%" height="130%">
-        <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
-      </filter>
     </defs>
-    <rect width="${width}" height="${height}" fill="url(#topGrad)" filter="url(#shadow)"/>
+    <rect width="${width}" height="${height}" fill="url(#topGrad)"/>
+    <rect width="${width}" height="1" y="${height - 1}" fill="#ffffff" fill-opacity="0.15"/>
     <text x="${width / 2}" y="${height / 2 + fontSize * 0.35}"
           font-family="Arial Black, Impact, sans-serif" font-weight="900"
           font-size="${fontSize}px" fill="${textColor}"
@@ -46,47 +57,47 @@ function createTopBannerSvg(width: number, text: string, brandColor: string, tex
 
 function createBottomBannerSvg(
   width: number,
+  height: number,
   dealerName: string,
   phone: string,
   brandColor: string,
-  hasLogo: boolean,
 ): Buffer {
-  const height = 56
-  const accentHeight = 3
-  const logoSpace = hasLogo ? 50 : 0
-  const leftTextX = 16 + logoSpace
+  const accentHeight = Math.max(2, Math.round(height * 0.06))
+  const nameFontSize = Math.round(height * 0.3)
+  const phoneFontSize = Math.round(height * 0.22)
+  const shipFontSize = Math.round(height * 0.28)
+  const subFontSize = Math.round(height * 0.2)
+
+  const leftX = 16
+  const nameY = accentHeight + nameFontSize + Math.round((height - accentHeight) * 0.15)
+  const phoneY = nameY + phoneFontSize + 4
 
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <!-- Accent line -->
     <rect width="${width}" height="${accentHeight}" fill="${brandColor}" y="0"/>
-    <!-- Dark background -->
-    <rect width="${width}" height="${height - accentHeight}" fill="#000000" fill-opacity="0.82" y="${accentHeight}"/>
+    <rect width="${width}" height="${height - accentHeight}" fill="#0d0d0d" y="${accentHeight}"/>
 
-    ${hasLogo ? `<!-- Logo placeholder area -->
-    <rect x="12" y="${accentHeight + 8}" width="36" height="36" rx="4" fill="#ffffff" fill-opacity="0.15"/>` : ''}
-
-    <!-- Dealer name left -->
-    <text x="${leftTextX}" y="${accentHeight + 24}"
+    <text x="${leftX}" y="${nameY}"
           font-family="Arial, Helvetica, sans-serif" font-weight="700"
-          font-size="14px" fill="#ffffff" fill-opacity="0.95">
+          font-size="${nameFontSize}px" fill="#ffffff" fill-opacity="0.95"
+          letter-spacing="1">
       ${escapeXml(dealerName.toUpperCase())}
     </text>
-    ${phone ? `<text x="${leftTextX}" y="${accentHeight + 42}"
+    ${phone ? `<text x="${leftX}" y="${phoneY}"
           font-family="Arial, Helvetica, sans-serif" font-weight="400"
-          font-size="12px" fill="#ffffff" fill-opacity="0.7">
+          font-size="${phoneFontSize}px" fill="${brandColor}" fill-opacity="0.9"
+          letter-spacing="0.5">
       ${escapeXml(phone)}
     </text>` : ''}
 
-    <!-- Right side: shipping text -->
-    <text x="${width - 16}" y="${accentHeight + 22}"
+    <text x="${width - 16}" y="${nameY}"
           font-family="Arial Black, Impact, sans-serif" font-weight="900"
-          font-size="16px" fill="${brandColor}"
+          font-size="${shipFontSize}px" fill="${brandColor}"
           text-anchor="end" letter-spacing="1">
       SHIPPING NATIONWIDE
     </text>
-    <text x="${width - 16}" y="${accentHeight + 42}"
+    <text x="${width - 16}" y="${phoneY}"
           font-family="Arial, Helvetica, sans-serif" font-weight="600"
-          font-size="12px" fill="#ffffff" fill-opacity="0.8"
+          font-size="${subFontSize}px" fill="#ffffff" fill-opacity="0.7"
           text-anchor="end" letter-spacing="0.5">
       BUY FROM ANYWHERE
     </text>
@@ -118,17 +129,13 @@ function createFeatureOverlaySvg(
   }).join('\n')
 
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <!-- Dark overlay -->
     <rect width="${width}" height="${height}" fill="#000000" fill-opacity="0.65"/>
-    <!-- Left accent bar -->
     <rect x="${padding - 8}" y="${startY - titleSize}" width="4" height="${titleSize + 20 + features.length * lineHeight}" fill="${brandColor}" rx="2"/>
-    <!-- Title -->
     <text x="${padding + 12}" y="${startY}"
           font-family="Arial Black, Impact, sans-serif" font-weight="900"
           font-size="${titleSize}px" fill="${brandColor}" letter-spacing="3">
       ${escapeXml(title)}
     </text>
-    <!-- Features list -->
     ${featureLines}
   </svg>`
 
@@ -139,7 +146,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json() as BannerRequest
 
-    // Fetch the source image
     const imgRes = await fetch(body.imageUrl, { signal: AbortSignal.timeout(15000) })
     if (!imgRes.ok) throw new Error(`Failed to fetch image: ${imgRes.status}`)
 
@@ -153,7 +159,6 @@ export async function POST(req: Request) {
     const textColor = body.secondaryColor || '#ffffff'
 
     if (body.mode === 'exterior_features' || body.mode === 'interior_features') {
-      // Feature overlay mode
       const title = body.mode === 'exterior_features' ? 'EXTERIOR FEATURES' : 'INTERIOR FEATURES'
       const features = body.featuresList || []
 
@@ -172,55 +177,34 @@ export async function POST(req: Request) {
       })
     }
 
-    // Standard banner mode
-    const topSvg = createTopBannerSvg(width, body.topText, brandColor, textColor)
-    const bottomSvg = createBottomBannerSvg(width, body.dealerName, body.phone || '', brandColor, !!body.logoUrl)
+    // Standard banner mode — keep original dimensions, shrink photo to fit
+    const topHeight = Math.round(height * 0.07)
+    const bottomHeight = Math.round(height * 0.06)
+    const photoHeight = height - topHeight - bottomHeight
 
-    // Extend image canvas to add banners
-    const topHeight = 64
-    const bottomHeight = 56
-    const totalHeight = topHeight + height + bottomHeight
+    // Resize the original photo to fit the middle area
+    const resizedPhoto = await sharp(imgBuffer)
+      .resize(width, photoHeight, { fit: 'cover', position: 'centre' })
+      .toBuffer()
 
-    // Create the final composite
+    const topSvg = createTopBannerSvg(width, topHeight, body.topText, brandColor, textColor)
+    const bottomSvg = createBottomBannerSvg(width, bottomHeight, body.dealerName, body.phone || '', brandColor)
+
+    // Create canvas at ORIGINAL dimensions — no aspect ratio change
     const canvas = sharp({
       create: {
         width,
-        height: totalHeight,
+        height,
         channels: 3,
         background: { r: 0, g: 0, b: 0 },
       },
     })
 
     const composites: sharp.OverlayOptions[] = [
-      // Top banner
       { input: topSvg, top: 0, left: 0 },
-      // Original photo
-      { input: imgBuffer, top: topHeight, left: 0 },
-      // Bottom banner
-      { input: bottomSvg, top: topHeight + height, left: 0 },
+      { input: resizedPhoto, top: topHeight, left: 0 },
+      { input: bottomSvg, top: topHeight + photoHeight, left: 0 },
     ]
-
-    // Add dealer logo to bottom banner if available
-    if (body.logoUrl) {
-      try {
-        const logoRes = await fetch(body.logoUrl, { signal: AbortSignal.timeout(10000) })
-        if (logoRes.ok) {
-          const logoBuf = Buffer.from(await logoRes.arrayBuffer())
-          const resizedLogo = await sharp(logoBuf)
-            .resize(36, 36, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-            .png()
-            .toBuffer()
-
-          composites.push({
-            input: resizedLogo,
-            top: topHeight + height + 3 + 8,
-            left: 12,
-          })
-        }
-      } catch {
-        // Logo fetch failed, skip it
-      }
-    }
 
     const result = await canvas
       .composite(composites)

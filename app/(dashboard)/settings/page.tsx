@@ -17,17 +17,21 @@ const COLOR_PRESETS = [
 interface DealerData {
   id: string
   name: string
+  phone: string | null
   logo_url: string | null
   brand_colors: { primary: string; secondary: string }
+  description_must_haves: string | null
 }
 
 export default function SettingsPage() {
   const [dealer, setDealer] = useState<DealerData | null>(null)
   const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
   const [primaryColor, setPrimaryColor] = useState('#000000')
   const [secondaryColor, setSecondaryColor] = useState('#ffffff')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [descriptionMustHaves, setDescriptionMustHaves] = useState('')
   const [uploading, setUploading] = useState(false)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
 
@@ -46,8 +50,10 @@ export default function SettingsPage() {
     if (data) {
       setDealer(data)
       setName(data.name)
+      setPhone(data.phone || '')
       setPrimaryColor(data.brand_colors?.primary || '#000000')
       setSecondaryColor(data.brand_colors?.secondary || '#ffffff')
+      setDescriptionMustHaves(data.description_must_haves || '')
       setLogoPreview(data.logo_url)
     }
   }, [supabase])
@@ -65,7 +71,9 @@ export default function SettingsPage() {
       .from('dealers')
       .update({
         name,
+        phone: phone || null,
         brand_colors: { primary: primaryColor, secondary: secondaryColor },
+        description_must_haves: descriptionMustHaves || null,
       })
       .eq('id', dealer.id)
 
@@ -163,6 +171,32 @@ export default function SettingsPage() {
           onChange={(e) => setName(e.target.value)}
           className="input-dark w-full px-4 py-3 rounded-lg"
           placeholder="Premier Auto Group"
+        />
+      </section>
+
+      {/* Phone Number */}
+      <section className="animate-fade-up bg-surface border border-border rounded-xl p-6 mb-6" style={{ animationDelay: '250ms' }}>
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-600 mb-4">Phone Number</h2>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="input-dark w-full px-4 py-3 rounded-lg"
+          placeholder="(555) 123-4567"
+        />
+        <p className="text-xs text-muted-2 mt-2">Displayed on banner bottom bar instead of logo</p>
+      </section>
+
+      {/* Description Must-Haves */}
+      <section className="animate-fade-up bg-surface border border-border rounded-xl p-6 mb-6" style={{ animationDelay: '275ms' }}>
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-600 mb-2">Description Must-Haves</h2>
+        <p className="text-xs text-muted-2 mb-4">Text that will be included in every AI-generated SEO description. Add your dealership tagline, warranty info, shipping policy, or any standard copy you want in all vehicle listings.</p>
+        <textarea
+          value={descriptionMustHaves}
+          onChange={(e) => setDescriptionMustHaves(e.target.value)}
+          className="input-dark w-full px-4 py-3 rounded-lg resize-y min-h-[100px]"
+          placeholder="e.g. All vehicles come with a complimentary 3-month warranty. We offer nationwide shipping and easy financing options. Visit our showroom at 123 Main St."
+          rows={4}
         />
       </section>
 
