@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 import sharp from 'sharp'
+import { join } from 'path'
+
+// Point fontconfig at bundled fonts so librsvg resolves InterBlack / InterBold
+process.env.FONTCONFIG_PATH = join(process.cwd(), 'fonts')
 
 interface BannerRequest {
   imageUrl: string
@@ -75,7 +79,7 @@ function createTopBannerSvg(width: number, height: number, text: string, brandCo
     <rect width="${width}" height="${height}" fill="url(#topGrad)"/>
     <rect width="${width}" height="1" y="${height - 1}" fill="#ffffff" fill-opacity="0.15"/>
     <text x="${width / 2}" y="${height / 2 + fontSize * 0.35}"
-          font-family="Arial Black, Impact, sans-serif" font-weight="900"
+          font-family="InterBlack" font-weight="900"
           font-size="${fontSize}px" fill="${textColor}"
           text-anchor="middle" letter-spacing="2">
       ${escapeXml(text)}
@@ -107,26 +111,26 @@ function createBottomBannerSvg(
     <rect width="${width}" height="${height - accentHeight}" fill="#0d0d0d" y="${accentHeight}"/>
 
     <text x="${leftX}" y="${nameY}"
-          font-family="Arial, Helvetica, sans-serif" font-weight="700"
+          font-family="InterBold" font-weight="700"
           font-size="${nameFontSize}px" fill="#ffffff" fill-opacity="0.95"
           letter-spacing="1">
       ${escapeXml(dealerName.toUpperCase())}
     </text>
     ${phone ? `<text x="${leftX}" y="${phoneY}"
-          font-family="Arial, Helvetica, sans-serif" font-weight="400"
+          font-family="InterBold" font-weight="400"
           font-size="${phoneFontSize}px" fill="${brandColor}" fill-opacity="0.9"
           letter-spacing="0.5">
       ${escapeXml(phone)}
     </text>` : ''}
 
     <text x="${width - 16}" y="${nameY}"
-          font-family="Arial Black, Impact, sans-serif" font-weight="900"
+          font-family="InterBlack" font-weight="900"
           font-size="${shipFontSize}px" fill="${brandColor}"
           text-anchor="end" letter-spacing="1">
       SHIPPING NATIONWIDE
     </text>
     <text x="${width - 16}" y="${phoneY}"
-          font-family="Arial, Helvetica, sans-serif" font-weight="600"
+          font-family="InterBold" font-weight="600"
           font-size="${subFontSize}px" fill="#ffffff" fill-opacity="0.7"
           text-anchor="end" letter-spacing="0.5">
       BUY FROM ANYWHERE
@@ -152,7 +156,7 @@ function createFeatureOverlaySvg(
   const featureLines = features.map((f, i) => {
     const y = startY + titleSize + 30 + (i * lineHeight)
     return `<text x="${padding + 12}" y="${y}"
-          font-family="Arial, Helvetica, sans-serif" font-weight="600"
+          font-family="InterBold" font-weight="600"
           font-size="${featureSize}px" fill="#ffffff" letter-spacing="0.5">
       ${escapeXml('\u2022  ' + f.toUpperCase())}
     </text>`
@@ -162,7 +166,7 @@ function createFeatureOverlaySvg(
     <rect width="${width}" height="${height}" fill="#000000" fill-opacity="0.65"/>
     <rect x="${padding - 8}" y="${startY - titleSize}" width="4" height="${titleSize + 20 + features.length * lineHeight}" fill="${brandColor}" rx="2"/>
     <text x="${padding + 12}" y="${startY}"
-          font-family="Arial Black, Impact, sans-serif" font-weight="900"
+          font-family="InterBlack" font-weight="900"
           font-size="${titleSize}px" fill="${brandColor}" letter-spacing="3">
       ${escapeXml(title)}
     </text>

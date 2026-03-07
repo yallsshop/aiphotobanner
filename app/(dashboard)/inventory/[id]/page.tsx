@@ -15,6 +15,7 @@ interface Vehicle {
   city_mpg: number; dom: number; carfax_1_owner: boolean
   carfax_clean_title: boolean; photo_urls: string[]; vdp_url: string
   photo_status?: string; processed_photo_urls?: string[]
+  features?: string[]
 }
 
 interface EnhancementSuggestion {
@@ -124,6 +125,7 @@ export default function VehicleDetailPage() {
             highway_mpg: vehicle.highway_mpg, city_mpg: vehicle.city_mpg,
             carfax_1_owner: vehicle.carfax_1_owner, carfax_clean_title: vehicle.carfax_clean_title,
             dom: vehicle.dom,
+            features: vehicle.features,
           },
           descriptionMustHaves: dealer?.description_must_haves || '',
         }),

@@ -70,6 +70,7 @@ interface VehicleContext {
   cylinders?: number; seating?: string; highway_mpg?: number
   city_mpg?: number; carfax_1_owner?: boolean
   carfax_clean_title?: boolean; dom?: number
+  features?: string[]
 }
 
 // Hot-button features that customers actively search for
@@ -207,6 +208,10 @@ When you see an exterior shot, look for:
 
     if (knownFeatures.length > 0) {
       prompt += `\n\n=== DERIVED SELLING POINTS (high confidence) ===\n${knownFeatures.join('\n')}`
+    }
+
+    if (vehicleContext.features && vehicleContext.features.length > 0) {
+      prompt += `\n\n=== CONFIRMED FEATURES FROM DEALER FEED (use these as banner text) ===\n${vehicleContext.features.join(', ')}\nThese are CONFIRMED features. Prioritize these in banner_text over guesses.`
     }
 
     prompt += `\n\nCombine what you SEE in photos with these CONFIRMED specs. The specs are your source of truth — never contradict them. Use the trim level to infer likely features (e.g. Reserve trim Lincoln = leather + heated seats + premium audio), but note them as "likely" in features_visible if not directly seen.`

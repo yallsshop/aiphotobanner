@@ -34,6 +34,74 @@ interface FeedVehicle {
   }
 }
 
+// Bill Collins / flat dealer feed format
+interface BillCollinsFeedVehicle {
+  vin: string
+  name?: string
+  year?: number
+  make?: string
+  model?: string
+  trim?: string
+  bodyStyle?: string
+  engine?: string
+  transmission?: string
+  fuelType?: string
+  driveType?: string
+  exteriorColor?: string
+  interiorColor?: string
+  stockNumber?: string
+  mileage?: string | number
+  msrp?: number
+  cpo?: boolean
+  carfax_1_owner?: boolean
+  carfax_clean_title?: boolean
+  features?: string[]
+  photoUrls?: string[]
+  dealerName?: string
+  comments?: string
+  detailUrl?: string
+}
+
+type AnyFeedVehicle = FeedVehicle | BillCollinsFeedVehicle
+
+function isBillCollinsFormat(v: AnyFeedVehicle): v is BillCollinsFeedVehicle {
+  return !('build' in v) && ('year' in v || 'make' in v || 'model' in v)
+}
+
+function parseMileage(mileage: string | number | undefined): number {
+  if (mileage === undefined || mileage === null) return 0
+  if (typeof mileage === 'number') return mileage
+  const match = mileage.match(/[\d,]+/)
+  return match ? parseInt(match[0].replace(/,/g, ''), 10) : 0
+}
+
+function normalizeBillCollins(v: BillCollinsFeedVehicle) {
+  return {
+    vin: v.vin,
+    stock_no: v.stockNumber || '',
+    heading: v.name || `${v.year || ''} ${v.make || ''} ${v.model || ''} ${v.trim || ''}`.trim(),
+    year: v.year,
+    make: v.make,
+    model: v.model,
+    trim: v.trim,
+    body_type: v.bodyStyle,
+    engine: v.engine,
+    transmission: v.transmission,
+    drivetrain: v.driveType,
+    fuel_type: v.fuelType,
+    exterior_color: v.exteriorColor,
+    interior_color: v.interiorColor,
+    miles: parseMileage(v.mileage),
+    carfax_1_owner: v.carfax_1_owner ?? false,
+    carfax_clean_title: v.carfax_clean_title ?? false,
+    dom: 0,
+    photo_urls: v.photoUrls ?? [],
+    vdp_url: v.detailUrl || '',
+    features: v.features ?? [],
+    raw_data: v,
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClient()
@@ -48,37 +116,49 @@ export async function POST(req: Request) {
 
     if (!dealer) return NextResponse.json({ error: 'No dealer profile' }, { status: 404 })
 
-    const { vehicles } = await req.json() as { vehicles: FeedVehicle[] }
+    const { vehicles } = await req.json() as { vehicles: AnyFeedVehicle[] }
 
-    const rows = vehicles.map((v) => ({
-      dealer_id: dealer.id,
-      vin: v.vin,
-      stock_no: v.stock_no,
-      heading: v.heading,
-      year: v.build?.year,
-      make: v.build?.make,
-      model: v.build?.model,
-      trim: v.build?.trim,
-      body_type: v.build?.body_type,
-      engine: v.build?.engine,
-      transmission: v.build?.transmission,
-      drivetrain: v.build?.drivetrain,
-      fuel_type: v.build?.fuel_type,
-      exterior_color: v.exterior_color,
-      interior_color: v.interior_color,
-      miles: v.miles,
-      doors: v.build?.doors,
-      cylinders: v.build?.cylinders,
-      seating: v.build?.std_seating,
-      highway_mpg: v.build?.highway_mpg,
-      city_mpg: v.build?.city_mpg,
-      carfax_1_owner: v.carfax_1_owner ?? false,
-      carfax_clean_title: v.carfax_clean_title ?? true,
-      dom: v.dom ?? 0,
-      photo_urls: v.media?.photo_links ?? [],
-      vdp_url: v.vdp_url,
-      raw_data: v,
-    }))
+    const rows = vehicles.map((v) => {
+      if (isBillCollinsFormat(v)) {
+        const normalized = normalizeBillCollins(v)
+        return {
+          dealer_id: dealer.id,
+          ...normalized,
+        }
+      }
+
+      // Original MarketCheck-style format
+      const fv = v as FeedVehicle
+      return {
+        dealer_id: dealer.id,
+        vin: fv.vin,
+        stock_no: fv.stock_no,
+        heading: fv.heading,
+        year: fv.build?.year,
+        make: fv.build?.make,
+        model: fv.build?.model,
+        trim: fv.build?.trim,
+        body_type: fv.build?.body_type,
+        engine: fv.build?.engine,
+        transmission: fv.build?.transmission,
+        drivetrain: fv.build?.drivetrain,
+        fuel_type: fv.build?.fuel_type,
+        exterior_color: fv.exterior_color,
+        interior_color: fv.interior_color,
+        miles: fv.miles,
+        doors: fv.build?.doors,
+        cylinders: fv.build?.cylinders,
+        seating: fv.build?.std_seating,
+        highway_mpg: fv.build?.highway_mpg,
+        city_mpg: fv.build?.city_mpg,
+        carfax_1_owner: fv.carfax_1_owner ?? false,
+        carfax_clean_title: fv.carfax_clean_title ?? true,
+        dom: fv.dom ?? 0,
+        photo_urls: fv.media?.photo_links ?? [],
+        vdp_url: fv.vdp_url,
+        raw_data: fv,
+      }
+    })
 
     const { data, error } = await supabase
       .from('inventory')
