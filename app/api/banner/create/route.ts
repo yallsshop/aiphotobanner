@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { join } from 'path'
+import { GoogleGenAI } from '@google/genai'
 
 // Point fontconfig at bundled fonts so librsvg resolves InterBlack / InterBold
 process.env.FONTCONFIG_PATH = join(process.cwd(), 'fonts')
@@ -13,8 +14,9 @@ interface BannerRequest {
   logoUrl?: string
   dealerName: string
   phone?: string
-  mode?: 'standard' | 'exterior_features' | 'interior_features'
+  mode?: 'standard' | 'exterior_features' | 'interior_features' | 'ai_banner'
   featuresList?: string[]
+  vehicleName?: string
 }
 
 // Profanity + garbage filter — catches truncation artifacts and inappropriate text
@@ -176,6 +178,79 @@ function createFeatureOverlaySvg(
   return Buffer.from(svg)
 }
 
+async function createAiBanner(
+  imageBase64: string,
+  mimeType: string,
+  topText: string,
+  dealerName: string,
+  phone: string,
+  brandColor: string,
+  vehicleName?: string,
+): Promise<Buffer | null> {
+  const apiKey = process.env.GOOGLE_GENAI_API_KEY
+  if (!apiKey) return null
+
+  const ai = new GoogleGenAI({ apiKey })
+
+  const headline = sanitizeBannerText(topText)
+  const dealerLine = `${dealerName.toUpperCase()}${phone ? '  |  ' + phone : ''}`
+  const vehicleLabel = vehicleName ? vehicleName.toUpperCase() : ''
+
+  const prompt = `You are a professional automotive graphic designer creating a car dealership listing photo.
+
+TASK: Add professional dealership banner overlays to this vehicle photo.
+
+=== WHAT TO ADD ===
+1. TOP BANNER BAR: A solid colored banner bar across the ENTIRE top edge of the image (about 8-10% of image height).
+   - Background color: ${brandColor} (with a subtle gradient darker at edges)
+   - Text in the center: "${headline}" in bold white uppercase letters
+   ${vehicleLabel ? `- Below or beside the headline, smaller: "${vehicleLabel}"` : ''}
+
+2. BOTTOM BANNER BAR: A dark/black banner bar across the ENTIRE bottom edge (about 6-8% of image height).
+   - Left side: "${dealerLine}" in white text
+   - Right side: "SHIPPING NATIONWIDE" in ${brandColor} colored text
+   - Below that: "BUY FROM ANYWHERE" in smaller grey text
+
+=== ABSOLUTE RULES — CRITICAL ===
+- The vehicle in the photo must remain COMPLETELY UNCHANGED — same exact color, angle, reflections, shadows, badges, wheels, everything
+- Do NOT alter, retouch, recolor, move, resize, or modify the vehicle in ANY way
+- Do NOT change the background or environment behind the vehicle
+- ONLY add the two banner bars (top and bottom) as opaque overlays on top of the existing image
+- The banners must be clean, sharp, and professional — like a real dealership overlay
+- Text must be perfectly legible and correctly spelled
+- The banner bars should be opaque (not transparent) — they cover whatever is behind them
+- Keep the aspect ratio exactly the same as the input image
+
+Think of this like placing sticker overlays on top of a photo — the photo underneath stays perfectly intact.`
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-image-preview',
+      contents: [
+        { inlineData: { mimeType, data: imageBase64 } },
+        prompt,
+      ],
+      config: {
+        responseModalities: ['IMAGE'],
+        imageConfig: {
+          imageSize: '1K',
+        },
+      },
+    })
+
+    const parts = response.candidates?.[0]?.content?.parts || []
+    for (const part of parts) {
+      if (part.inlineData?.data) {
+        return Buffer.from(part.inlineData.data, 'base64')
+      }
+    }
+    return null
+  } catch (err) {
+    console.error('AI banner generation failed:', err)
+    return null
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json() as BannerRequest
@@ -219,6 +294,39 @@ export async function POST(req: Request) {
           'Content-Disposition': `inline; filename="${body.mode}.jpg"`,
         },
       })
+    }
+
+    // AI Banner mode — uses Nano Banana Pro for premium overlays
+    if (body.mode === 'ai_banner') {
+      const imgData = Buffer.from(await (await fetch(body.imageUrl, { signal: AbortSignal.timeout(15000) })).arrayBuffer())
+      const base64 = imgData.toString('base64')
+
+      const aiResult = await createAiBanner(
+        base64,
+        'image/jpeg',
+        body.topText,
+        body.dealerName,
+        body.phone || '',
+        brandColor,
+        body.vehicleName,
+      )
+
+      if (aiResult) {
+        // Ensure consistent JPEG output
+        const finalBuffer = await sharp(aiResult)
+          .jpeg({ quality: 92 })
+          .toBuffer()
+
+        return new Response(new Uint8Array(finalBuffer), {
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Content-Disposition': 'inline; filename="ai-bannered.jpg"',
+          },
+        })
+      }
+
+      // Fallback to standard mode if AI generation fails
+      console.warn('AI banner failed, falling back to standard mode')
     }
 
     // Standard banner mode

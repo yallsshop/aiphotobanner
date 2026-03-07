@@ -72,6 +72,7 @@ export default function VehicleDetailPage() {
   const [copiedSeo, setCopiedSeo] = useState(false)
   const [enhancePrompt, setEnhancePrompt] = useState('')
   const [enhanceModel, setEnhanceModel] = useState<'flash' | 'pro'>('flash')
+  const [bannerMode, setBannerMode] = useState<'standard' | 'ai_banner'>('standard')
 
   const supabase = createClient()
 
@@ -176,6 +177,10 @@ export default function VehicleDetailPage() {
             secondaryColor: dealer.brand_colors?.secondary || '#ffffff',
             dealerName: dealer.name,
             phone: dealer.phone || '',
+            ...(bannerMode === 'ai_banner' ? {
+              mode: 'ai_banner',
+              vehicleName: vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim() : undefined,
+            } : {}),
           }),
         })
 
@@ -413,11 +418,21 @@ export default function VehicleDetailPage() {
             </button>
           )}
           {allAnalyzed && !hasBannered && (
-            <button onClick={handleCreateBanners} disabled={creatingBanners}
-              className="btn-amber px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
-              {creatingBanners ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Creating Banners...</span>
-                : 'Create Banners'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={handleCreateBanners} disabled={creatingBanners}
+                className="btn-amber px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
+                {creatingBanners ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Creating Banners...</span>
+                  : 'Create Banners'}
+              </button>
+              <select
+                value={bannerMode}
+                onChange={(e) => setBannerMode(e.target.value as 'standard' | 'ai_banner')}
+                className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-amber-500/50 outline-none"
+              >
+                <option value="standard">Standard (SVG)</option>
+                <option value="ai_banner">AI Premium (Nano Banana)</option>
+              </select>
+            </div>
           )}
           {hasBannered && !savedToCloud && (
             <button onClick={handleSaveProcessed} disabled={saving}
