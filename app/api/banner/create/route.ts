@@ -3,6 +3,9 @@ import sharp from 'sharp'
 import { join } from 'path'
 import { GoogleGenAI } from '@google/genai'
 
+// Allow up to 2 minutes for AI banner generation
+export const maxDuration = 120
+
 // Point fontconfig at bundled fonts so librsvg resolves InterBlack / InterBold
 process.env.FONTCONFIG_PATH = join(process.cwd(), 'fonts')
 

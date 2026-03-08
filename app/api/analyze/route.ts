@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type } from '@google/genai'
 
+// Allow up to 5 minutes for large photo sets analyzed in batches
+export const maxDuration = 300
+
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY! })
 
 const BATCH_ANALYSIS_SCHEMA = {
@@ -347,48 +350,92 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No valid images' }, { status: 400 })
     }
 
-    const contents: Array<{ inlineData: { mimeType: string; data: string } } | string> = []
+    // Process in batches of 8 to avoid output token truncation
+    const ANALYSIS_BATCH = 8
+    type PhotoResult = { index: number; classification: string; confidence: number; banner_text: string; features_visible: string[]; condition_notes?: string; enhancement_suggestions?: { action: string; instruction: string; priority: string }[] }
+    const allPhotoResults: { ref: string; analysis: { classification: string; confidence: number; banner_text: string; features: string[]; condition_notes?: string; enhancement_suggestions?: { action: string; instruction: string; priority: string }[] } }[] = []
+    let allExteriorFeatures: string[] = []
+    let allInteriorFeatures: string[] = []
+    let seoDescription = ''
 
-    // Add window sticker first if provided — gives AI full feature context before seeing photos
-    if (windowSticker?.data) {
-      contents.push({ inlineData: { mimeType: windowSticker.mimeType, data: windowSticker.data } })
-      contents.push('[WINDOW STICKER — Read ALL features, packages, and options from this sticker. Use these as CONFIRMED features for banner text.]')
+    const batches: { data: string; mimeType: string; ref: string; globalIndex: number }[][] = []
+    for (let i = 0; i < imageData.length; i += ANALYSIS_BATCH) {
+      batches.push(imageData.slice(i, i + ANALYSIS_BATCH).map((d, j) => ({ ...d, globalIndex: i + j })))
     }
 
-    for (let i = 0; i < imageData.length; i++) {
-      contents.push({ inlineData: { mimeType: imageData[i].mimeType, data: imageData[i].data } })
-      contents.push(`[Photo ${i}]`)
+    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      const batch = batches[batchIdx]
+      const isFirstBatch = batchIdx === 0
+      const isLastBatch = batchIdx === batches.length - 1
+
+      const contents: Array<{ inlineData: { mimeType: string; data: string } } | string> = []
+
+      // Window sticker on first batch only
+      if (isFirstBatch && windowSticker?.data) {
+        contents.push({ inlineData: { mimeType: windowSticker.mimeType, data: windowSticker.data } })
+        contents.push('[WINDOW STICKER — Read ALL features, packages, and options from this sticker. Use these as CONFIRMED features for banner text.]')
+      }
+
+      for (let i = 0; i < batch.length; i++) {
+        contents.push({ inlineData: { mimeType: batch[i].mimeType, data: batch[i].data } })
+        contents.push(`[Photo ${i}]`)
+      }
+
+      // Tell it about already-used banner texts to avoid repetition across batches
+      let batchPrompt = buildBatchPrompt(vehicleContext, batch.length, isLastBatch ? descriptionMustHaves : undefined, customFeatures, customInstructions)
+      if (allPhotoResults.length > 0) {
+        const usedTexts = allPhotoResults.map(r => r.analysis.banner_text).join(', ')
+        batchPrompt += `\n\n=== ALREADY USED BANNER TEXTS (DO NOT REPEAT) ===\nPrevious photos already use: ${usedTexts}\nYou MUST use DIFFERENT features/text for these photos.`
+      }
+      if (!isLastBatch) {
+        batchPrompt += `\n\nNOTE: seo_description can be empty "" for this batch — it will be generated in a later batch.`
+      }
+
+      contents.push(batchPrompt)
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: BATCH_ANALYSIS_SCHEMA,
+          maxOutputTokens: 16384,
+        },
+      })
+
+      const parsed = JSON.parse(response.text || '{}')
+
+      const batchResults = parsed.photos?.map((p: PhotoResult) => ({
+        ref: batch[p.index]?.ref,
+        analysis: {
+          classification: p.classification,
+          confidence: p.confidence,
+          banner_text: p.banner_text,
+          features: p.features_visible,
+          condition_notes: p.condition_notes,
+          enhancement_suggestions: p.enhancement_suggestions || [],
+        },
+      })) || []
+
+      allPhotoResults.push(...batchResults)
+
+      // Merge features from all batches
+      if (parsed.exterior_features?.length) {
+        allExteriorFeatures = [...new Set([...allExteriorFeatures, ...parsed.exterior_features])]
+      }
+      if (parsed.interior_features?.length) {
+        allInteriorFeatures = [...new Set([...allInteriorFeatures, ...parsed.interior_features])]
+      }
+      if (parsed.seo_description && isLastBatch) {
+        seoDescription = parsed.seo_description
+      }
     }
-    contents.push(buildBatchPrompt(vehicleContext, imageData.length, descriptionMustHaves, customFeatures, customInstructions))
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: BATCH_ANALYSIS_SCHEMA,
-      },
-    })
-
-    const parsed = JSON.parse(response.text || '{}')
-
-    const results = parsed.photos?.map((p: { index: number; classification: string; confidence: number; banner_text: string; features_visible: string[]; condition_notes?: string; enhancement_suggestions?: { action: string; instruction: string; priority: string }[] }) => ({
-      ref: imageData[p.index]?.ref,
-      analysis: {
-        classification: p.classification,
-        confidence: p.confidence,
-        banner_text: p.banner_text,
-        features: p.features_visible,
-        condition_notes: p.condition_notes,
-        enhancement_suggestions: p.enhancement_suggestions || [],
-      },
-    })) || []
 
     return NextResponse.json({
-      results,
-      exterior_features: parsed.exterior_features || [],
-      interior_features: parsed.interior_features || [],
-      seo_description: parsed.seo_description || '',
+      results: allPhotoResults,
+      exterior_features: allExteriorFeatures,
+      interior_features: allInteriorFeatures,
+      seo_description: seoDescription,
     })
   } catch (error) {
     console.error('Analysis error:', error)
