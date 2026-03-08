@@ -98,9 +98,33 @@ export default function VehicleDetailPage() {
       const realPhotos = (vehicleRes.data.photo_urls || []).filter((url: string) =>
         !url.includes('/assets/stock/') && !url.includes('transparent')
       )
-      setPhotos(realPhotos.map((url: string) => ({ url })))
 
-      if (vehicleRes.data.photo_status === 'processed') {
+      // Restore analysis from database if it exists
+      const savedAnalysis = vehicleRes.data.ai_analysis as {
+        photos?: { url: string; classification: string; confidence: number; banner_text: string; features: string[]; condition_notes?: string; enhancement_suggestions?: EnhancementSuggestion[] }[]
+        exterior_features?: string[]
+        interior_features?: string[]
+        seo_description?: string
+      } | null
+
+      if (savedAnalysis?.photos?.length) {
+        setPhotos(realPhotos.map((url: string) => {
+          const saved = savedAnalysis.photos?.find(p => p.url === url)
+          if (saved) {
+            return { url, analysis: { classification: saved.classification, confidence: saved.confidence, banner_text: saved.banner_text, features: saved.features, condition_notes: saved.condition_notes, enhancement_suggestions: saved.enhancement_suggestions } }
+          }
+          return { url }
+        }))
+        setExteriorFeatures(savedAnalysis.exterior_features || [])
+        setInteriorFeatures(savedAnalysis.interior_features || [])
+        setSeoDescription(savedAnalysis.seo_description || '')
+        setShowContextPanel(false)
+      } else {
+        setPhotos(realPhotos.map((url: string) => ({ url })))
+      }
+
+      // Restore processed banner URLs if they exist
+      if (vehicleRes.data.processed_photo_urls?.length) {
         setSavedToCloud(true)
       }
     }
@@ -166,11 +190,45 @@ export default function VehicleDetailPage() {
         if (result) return { ...p, analysis: result.analysis, analyzing: false }
         return { ...p, analyzing: false }
       }))
+
+      // Auto-save analysis to database so it survives page refresh
+      if (vehicle?.id) {
+        const analysisPayload = {
+          photos: data.results?.map((r: { ref: string; analysis: PhotoAnalysis }) => ({
+            url: r.ref,
+            ...r.analysis,
+          })) || [],
+          exterior_features: data.exterior_features || [],
+          interior_features: data.interior_features || [],
+          seo_description: data.seo_description || '',
+        }
+        fetch(`/api/inventory/${vehicle.id}/save-analysis`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ aiAnalysis: analysisPayload }),
+        }).catch(e => console.error('Auto-save analysis failed:', e))
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Processing failed')
       setPhotos(prev => prev.map(p => ({ ...p, analyzing: false })))
     } finally {
       setProcessing(false)
+    }
+  }
+
+  // Auto-save a single banner to Supabase Storage immediately
+  async function autoSaveBanner(blob: Blob, filename: string) {
+    if (!vehicle?.id) return
+    try {
+      const arrayBuffer = await blob.arrayBuffer()
+      const base64 = btoa(new Uint8Array(arrayBuffer).reduce((d, b) => d + String.fromCharCode(b), ''))
+      await fetch(`/api/inventory/${vehicle.id}/save-banner`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, data: base64 }),
+      })
+    } catch (e) {
+      console.error('Auto-save banner failed:', e)
     }
   }
 
@@ -184,13 +242,15 @@ export default function VehicleDetailPage() {
       const brandColor = dealer.brand_colors?.primary || '#d4a053'
       const secondaryColor = dealer.brand_colors?.secondary || '#ffffff'
       const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim()
+      const stockNo = vehicle.stock_no || 'photo'
 
       // Mark all as creating
       setPhotos(prev => prev.map(p => p.analysis ? { ...p, creating: true } : p))
 
       // Build all banner requests
-      const bannerRequests = analyzed.map(photo => ({
+      const bannerRequests = analyzed.map((photo, i) => ({
         url: photo.url,
+        filename: `${stockNo}_${i + 1}.jpg`,
         body: {
           imageUrl: photo.url,
           topText: photo.analysis!.banner_text,
@@ -216,11 +276,12 @@ export default function VehicleDetailPage() {
             })
             if (!res.ok) throw new Error('Banner creation failed')
             const blob = await res.blob()
+            // Auto-save to cloud immediately (fire and forget)
+            autoSaveBanner(blob, req.filename)
             return { url: req.url, blob, blobUrl: URL.createObjectURL(blob) }
           })
         )
 
-        // Update state as each batch completes
         for (const result of results) {
           if (result.status === 'fulfilled') {
             const { url, blob, blobUrl } = result.value
@@ -233,12 +294,15 @@ export default function VehicleDetailPage() {
 
       // Mark any remaining as done
       setPhotos(prev => prev.map(p => ({ ...p, creating: false })))
+      setSavedToCloud(true)
 
       // Feature overlay images — run both in parallel
       const featurePromises: Promise<void>[] = []
+      let featureIdx = analyzed.length + 1
 
       const extPhoto = analyzed.find(p => p.analysis?.classification?.startsWith('exterior')) || analyzed[0]
       if (extPhoto && exteriorFeatures.length > 0) {
+        const fname = `${stockNo}_${featureIdx++}.jpg`
         featurePromises.push((async () => {
           const res = await fetch('/api/banner/create', {
             method: 'POST',
@@ -252,6 +316,7 @@ export default function VehicleDetailPage() {
           })
           if (res.ok) {
             const blob = await res.blob()
+            autoSaveBanner(blob, fname)
             setPhotos(prev => [...prev, {
               url: extPhoto.url,
               analysis: { classification: 'exterior_features', confidence: 1, banner_text: 'EXTERIOR FEATURES', features: exteriorFeatures },
@@ -263,6 +328,7 @@ export default function VehicleDetailPage() {
 
       const intPhoto = analyzed.find(p => p.analysis?.classification?.startsWith('interior') || p.analysis?.classification === 'dashboard')
       if (intPhoto && interiorFeatures.length > 0) {
+        const fname = `${stockNo}_${featureIdx++}.jpg`
         featurePromises.push((async () => {
           const res = await fetch('/api/banner/create', {
             method: 'POST',
@@ -276,6 +342,7 @@ export default function VehicleDetailPage() {
           })
           if (res.ok) {
             const blob = await res.blob()
+            autoSaveBanner(blob, fname)
             setPhotos(prev => [...prev, {
               url: intPhoto.url,
               analysis: { classification: 'interior_features', confidence: 1, banner_text: 'INTERIOR FEATURES', features: interiorFeatures },
