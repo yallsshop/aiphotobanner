@@ -1,0 +1,417 @@
+{
+  "segments": {
+    "full_size_3row_suv": {
+      "label": "Full-Size 3-Row SUV",
+      "examples": ["Expedition", "Tahoe", "Sequoia", "Armada", "Wagoneer"],
+      "leadPriorities": [
+        "THIRD_ROW_USABILITY",
+        "TOWING_CAPACITY",
+        "ADAS_SUITE",
+        "CARGO_BEHIND_THIRD_ROW",
+        "RIDE_COMFORT",
+        "TECHNOLOGY",
+        "FUEL_ECONOMY_OR_HYBRID",
+        "RELIABILITY_RESALE"
+      ],
+      "tableStakes": [
+        "AEB", "FORWARD_COLLISION_WARNING", "LANE_DEPARTURE_WARNING",
+        "LANE_KEEP_ASSIST", "REARVIEW_CAMERA", "TPMS"
+      ],
+      "midTrimPriority": [
+        "LEATHERETTE_OR_LEATHER", "WIRELESS_APPLE_CARPLAY", "HEATED_FRONT_SEATS",
+        "BLIND_SPOT_MONITORING", "ADAPTIVE_CRUISE_CONTROL", "POWER_LIFTGATE", "ALLOY_WHEELS"
+      ],
+      "topTrimPriority": [
+        "VENTILATED_FRONT_SEATS", "PREMIUM_AUDIO", "HUD", "360_CAMERA",
+        "PANORAMIC_ROOF", "HANDS_FREE_DRIVING", "ADAPTIVE_SUSPENSION"
+      ],
+      "mustMentionSpecs": [
+        "PASSENGER_CAPACITY", "THIRD_ROW_LEGROOM", "CARGO_BEHIND_THIRD_ROW",
+        "MAX_CARGO", "TOWING_CAPACITY", "FUEL_ECONOMY", "AWD_OR_4WD"
+      ],
+      "valueAngles": [
+        "family_space", "usable_third_row", "road_trip_comfort",
+        "tow_ready", "premium_features_for_price"
+      ]
+    },
+    "midsize_suv_crossover": {
+      "label": "Midsize SUV / Crossover",
+      "examples": ["CR-V", "RAV4", "Tucson", "Sportage", "Escape", "Outback", "CX-50", "Edge", "Explorer"],
+      "leadPriorities": [
+        "FUEL_ECONOMY_OR_HYBRID",
+        "ALL_WHEEL_DRIVE",
+        "SAFETY_SUITE",
+        "INTERIOR_SPACE",
+        "TECHNOLOGY",
+        "RELIABILITY_RESALE",
+        "CARGO_SPACE",
+        "COMFORT_FEATURES"
+      ],
+      "tableStakes": [
+        "AEB", "FORWARD_COLLISION_WARNING", "LANE_DEPARTURE_WARNING",
+        "REARVIEW_CAMERA", "TPMS", "BLUETOOTH"
+      ],
+      "midTrimPriority": [
+        "HEATED_FRONT_SEATS", "APPLE_CARPLAY", "BLIND_SPOT_MONITORING",
+        "ADAPTIVE_CRUISE_CONTROL", "POWER_LIFTGATE", "LEATHER_SEATS", "DUAL_ZONE_CLIMATE"
+      ],
+      "topTrimPriority": [
+        "VENTILATED_FRONT_SEATS", "PANORAMIC_ROOF", "PREMIUM_AUDIO",
+        "360_CAMERA", "WIRELESS_APPLE_CARPLAY", "HUD", "DIGITAL_CLUSTER"
+      ],
+      "mustMentionSpecs": [
+        "FUEL_ECONOMY", "CARGO_VOLUME", "AWD_OR_4WD", "ENGINE_TYPE", "PASSENGER_CAPACITY"
+      ],
+      "valueAngles": [
+        "daily_driver_efficiency", "family_versatility", "tech_for_the_money",
+        "all_weather_capability", "reliability"
+      ]
+    },
+    "compact_suv_crossover": {
+      "label": "Compact SUV / Crossover",
+      "examples": ["HR-V", "Corolla Cross", "Trax", "Seltos", "Kicks", "Venue", "CX-30", "Trailblazer"],
+      "leadPriorities": [
+        "AFFORDABILITY",
+        "FUEL_EFFICIENCY",
+        "STANDARD_SAFETY",
+        "INTERIOR_SPACE",
+        "RELIABILITY",
+        "TECH_FOR_MONEY"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "TPMS", "BLUETOOTH"
+      ],
+      "midTrimPriority": [
+        "APPLE_CARPLAY", "HEATED_FRONT_SEATS", "BLIND_SPOT_MONITORING",
+        "AWD", "ALLOY_WHEELS", "PUSH_BUTTON_START"
+      ],
+      "topTrimPriority": [
+        "LEATHER_SEATS", "SUNROOF", "ADAPTIVE_CRUISE_CONTROL",
+        "WIRELESS_APPLE_CARPLAY", "PREMIUM_AUDIO"
+      ],
+      "mustMentionSpecs": [
+        "FUEL_ECONOMY", "ENGINE_TYPE", "AWD_OR_4WD", "CARGO_VOLUME"
+      ],
+      "valueAngles": [
+        "best_value", "fuel_saver", "city_friendly", "low_cost_of_ownership",
+        "reliable_daily_driver"
+      ]
+    },
+    "luxury_suv": {
+      "label": "Luxury SUV",
+      "examples": ["X5", "GLE", "Q7", "RX", "MDX", "Aviator", "Navigator", "Escalade", "GV70", "XC90"],
+      "leadPriorities": [
+        "PREMIUM_INTERIOR",
+        "TECHNOLOGY_SUITE",
+        "RIDE_QUALITY",
+        "ADAS_SUITE",
+        "BRAND_PRESTIGE",
+        "POWERTRAIN",
+        "CARGO_VERSATILITY"
+      ],
+      "tableStakes": [
+        "AEB", "LANE_KEEP_ASSIST", "REARVIEW_CAMERA", "LEATHER_SEATS",
+        "HEATED_FRONT_SEATS", "BLUETOOTH", "APPLE_CARPLAY"
+      ],
+      "midTrimPriority": [
+        "PANORAMIC_ROOF", "PREMIUM_AUDIO", "360_CAMERA",
+        "ADAPTIVE_CRUISE_CONTROL", "POWER_LIFTGATE", "HEATED_STEERING_WHEEL",
+        "MEMORY_SEATS"
+      ],
+      "topTrimPriority": [
+        "MASSAGING_SEATS", "HUD", "REAR_SEAT_ENTERTAINMENT",
+        "AIR_SUSPENSION", "HANDS_FREE_DRIVING", "VENTILATED_FRONT_SEATS",
+        "VENTILATED_REAR_SEATS", "EXECUTIVE_REAR_SEATS"
+      ],
+      "mustMentionSpecs": [
+        "ENGINE_TYPE", "AWD_OR_4WD", "PASSENGER_CAPACITY", "TOWING_CAPACITY"
+      ],
+      "valueAngles": [
+        "luxury_for_less", "premium_experience", "technology_leader",
+        "comfort_first", "status_and_substance"
+      ]
+    },
+    "half_ton_truck": {
+      "label": "Half-Ton Truck",
+      "examples": ["F-150", "Silverado 1500", "RAM 1500", "Tundra", "Titan", "Sierra 1500"],
+      "leadPriorities": [
+        "TOWING_HAULING",
+        "RIDE_COMFORT_INTERIOR",
+        "ENGINE_POWERTRAIN",
+        "FUEL_ECONOMY_OR_HYBRID",
+        "BED_UTILITY",
+        "TOWING_TECH",
+        "INFOTAINMENT",
+        "CAB_CONFIG",
+        "FOUR_WHEEL_DRIVE",
+        "ONBOARD_POWER"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "TPMS", "TRAILER_SWAY_CONTROL"
+      ],
+      "midTrimPriority": [
+        "HEATED_FRONT_SEATS", "APPLE_CARPLAY", "BLIND_SPOT_MONITORING",
+        "TRAILER_TOW_PACKAGE", "SPRAY_IN_BEDLINER", "RUNNING_BOARDS",
+        "POWER_SLIDING_REAR_WINDOW"
+      ],
+      "topTrimPriority": [
+        "PREMIUM_AUDIO", "VENTILATED_FRONT_SEATS", "MASSAGING_SEATS",
+        "HUD", "360_CAMERA", "HANDS_FREE_DRIVING", "PRO_POWER_ONBOARD",
+        "MULTIFUNCTION_TAILGATE", "ADAPTIVE_SUSPENSION"
+      ],
+      "mustMentionSpecs": [
+        "CAB_SIZE", "BED_LENGTH", "ENGINE_TYPE", "TOWING_CAPACITY",
+        "PAYLOAD_CAPACITY", "FOUR_WHEEL_DRIVE"
+      ],
+      "valueAngles": [
+        "work_and_play", "tow_anything", "crew_cab_comfort",
+        "fuel_efficient_truck", "tech_loaded_truck"
+      ]
+    },
+    "heavy_duty_truck": {
+      "label": "Heavy-Duty Truck",
+      "examples": ["F-250", "F-350", "Silverado 2500HD", "RAM 2500", "RAM 3500", "Sierra 2500HD"],
+      "leadPriorities": [
+        "TOWING_CAPACITY",
+        "PAYLOAD_CAPACITY",
+        "DIESEL_ENGINE",
+        "FOUR_WHEEL_DRIVE",
+        "BED_UTILITY",
+        "TOWING_TECH",
+        "INTERIOR_COMFORT",
+        "TECHNOLOGY"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "TRAILER_SWAY_CONTROL"
+      ],
+      "midTrimPriority": [
+        "HEATED_FRONT_SEATS", "TRAILER_TOW_PACKAGE", "GOOSENECK_PREP",
+        "APPLE_CARPLAY", "RUNNING_BOARDS", "UPFITTER_SWITCHES"
+      ],
+      "topTrimPriority": [
+        "PREMIUM_AUDIO", "VENTILATED_FRONT_SEATS", "360_CAMERA",
+        "HUD", "ADAPTIVE_CRUISE_CONTROL", "LEATHER_SEATS"
+      ],
+      "mustMentionSpecs": [
+        "ENGINE_TYPE", "TOWING_CAPACITY", "PAYLOAD_CAPACITY",
+        "CAB_SIZE", "BED_LENGTH", "FOUR_WHEEL_DRIVE"
+      ],
+      "valueAngles": [
+        "max_towing", "work_truck_capable", "diesel_power",
+        "luxury_work_truck", "commercial_ready"
+      ]
+    },
+    "midsize_sedan": {
+      "label": "Midsize Sedan",
+      "examples": ["Camry", "Accord", "Sonata", "K5", "Malibu", "Altima", "Mazda6"],
+      "leadPriorities": [
+        "FUEL_EFFICIENCY",
+        "RELIABILITY",
+        "SAFETY_SUITE",
+        "TECHNOLOGY",
+        "INTERIOR_COMFORT",
+        "TRUNK_SPACE",
+        "HYBRID_AVAILABILITY"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "BLUETOOTH", "TPMS"
+      ],
+      "midTrimPriority": [
+        "APPLE_CARPLAY", "HEATED_FRONT_SEATS", "BLIND_SPOT_MONITORING",
+        "ADAPTIVE_CRUISE_CONTROL", "SUNROOF", "LEATHER_SEATS"
+      ],
+      "topTrimPriority": [
+        "PANORAMIC_ROOF", "VENTILATED_FRONT_SEATS", "PREMIUM_AUDIO",
+        "HUD", "WIRELESS_APPLE_CARPLAY", "DIGITAL_CLUSTER"
+      ],
+      "mustMentionSpecs": [
+        "FUEL_ECONOMY", "ENGINE_TYPE", "TRUNK_VOLUME"
+      ],
+      "valueAngles": [
+        "fuel_saver", "reliable_commuter", "tech_loaded_sedan",
+        "comfortable_cruiser", "hybrid_savings"
+      ]
+    },
+    "compact_sedan": {
+      "label": "Compact Sedan",
+      "examples": ["Civic", "Corolla", "Elantra", "Forte", "Sentra", "Mazda3", "Jetta"],
+      "leadPriorities": [
+        "AFFORDABILITY",
+        "FUEL_EFFICIENCY",
+        "STANDARD_SAFETY",
+        "RELIABILITY",
+        "TECH_FOR_MONEY",
+        "INTERIOR_SPACE"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "BLUETOOTH"
+      ],
+      "midTrimPriority": [
+        "APPLE_CARPLAY", "HEATED_FRONT_SEATS", "BLIND_SPOT_MONITORING",
+        "SUNROOF", "PUSH_BUTTON_START", "ALLOY_WHEELS"
+      ],
+      "topTrimPriority": [
+        "LEATHER_SEATS", "ADAPTIVE_CRUISE_CONTROL", "WIRELESS_APPLE_CARPLAY",
+        "DIGITAL_CLUSTER", "PREMIUM_AUDIO"
+      ],
+      "mustMentionSpecs": [
+        "FUEL_ECONOMY", "ENGINE_TYPE", "TRUNK_VOLUME"
+      ],
+      "valueAngles": [
+        "best_value", "fuel_saver", "reliable_daily", "fun_to_drive",
+        "low_cost_ownership"
+      ]
+    },
+    "luxury_sedan": {
+      "label": "Luxury Sedan",
+      "examples": ["3 Series", "C-Class", "A4", "ES", "IS", "Genesis G70", "CT5", "TLX"],
+      "leadPriorities": [
+        "PREMIUM_INTERIOR",
+        "DRIVING_DYNAMICS",
+        "TECHNOLOGY_SUITE",
+        "ADAS_SUITE",
+        "BRAND_PRESTIGE",
+        "POWERTRAIN"
+      ],
+      "tableStakes": [
+        "LEATHER_SEATS", "HEATED_FRONT_SEATS", "AEB", "APPLE_CARPLAY",
+        "REARVIEW_CAMERA"
+      ],
+      "midTrimPriority": [
+        "PANORAMIC_ROOF", "PREMIUM_AUDIO", "ADAPTIVE_CRUISE_CONTROL",
+        "360_CAMERA", "HEATED_STEERING_WHEEL", "MEMORY_SEATS", "NAVIGATION"
+      ],
+      "topTrimPriority": [
+        "MASSAGING_SEATS", "HUD", "VENTILATED_FRONT_SEATS",
+        "HANDS_FREE_DRIVING", "EXECUTIVE_PACKAGE", "AIR_SUSPENSION"
+      ],
+      "mustMentionSpecs": [
+        "ENGINE_TYPE", "AWD_OR_4WD", "HORSEPOWER"
+      ],
+      "valueAngles": [
+        "luxury_for_less", "sport_sedan_performance", "technology_leader",
+        "executive_comfort", "brand_heritage"
+      ]
+    },
+    "sports_car": {
+      "label": "Sports / Performance Car",
+      "examples": ["Mustang", "Camaro", "Corvette", "Supra", "GR86", "BRZ", "Miata", "WRX"],
+      "leadPriorities": [
+        "POWERTRAIN_PERFORMANCE",
+        "HANDLING_CHASSIS",
+        "TRANSMISSION_TYPE",
+        "EXHAUST_SOUND",
+        "TRACK_CAPABILITY",
+        "APPEARANCE_PACKAGE",
+        "TECHNOLOGY"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA"
+      ],
+      "midTrimPriority": [
+        "PERFORMANCE_EXHAUST", "LIMITED_SLIP_DIFF", "SPORT_SUSPENSION",
+        "BREMBO_BRAKES", "APPLE_CARPLAY", "RECARO_SEATS"
+      ],
+      "topTrimPriority": [
+        "CARBON_FIBER_PACKAGE", "TRACK_PACKAGE", "MAGNETIC_RIDE",
+        "PERFORMANCE_DATA_RECORDER", "LAUNCH_CONTROL", "ACTIVE_EXHAUST"
+      ],
+      "mustMentionSpecs": [
+        "ENGINE_TYPE", "HORSEPOWER", "TORQUE", "TRANSMISSION_TYPE", "ZERO_TO_SIXTY"
+      ],
+      "valueAngles": [
+        "raw_performance", "weekend_warrior", "track_ready",
+        "manual_transmission_purist", "attainable_sports_car"
+      ]
+    },
+    "minivan": {
+      "label": "Minivan",
+      "examples": ["Odyssey", "Sienna", "Pacifica", "Carnival", "Grand Caravan"],
+      "leadPriorities": [
+        "PASSENGER_CAPACITY",
+        "INTERIOR_VERSATILITY",
+        "SAFETY_SUITE",
+        "ENTERTAINMENT",
+        "FUEL_ECONOMY_OR_HYBRID",
+        "SLIDING_DOORS",
+        "CARGO_FLEXIBILITY",
+        "TECHNOLOGY"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "SLIDING_DOORS", "BLUETOOTH"
+      ],
+      "midTrimPriority": [
+        "POWER_SLIDING_DOORS", "APPLE_CARPLAY", "HEATED_FRONT_SEATS",
+        "BLIND_SPOT_MONITORING", "TRI_ZONE_CLIMATE", "STOW_N_GO"
+      ],
+      "topTrimPriority": [
+        "REAR_SEAT_ENTERTAINMENT", "VACUUM_SYSTEM", "VENTILATED_FRONT_SEATS",
+        "PREMIUM_AUDIO", "360_CAMERA", "PANORAMIC_ROOF", "AWD"
+      ],
+      "mustMentionSpecs": [
+        "PASSENGER_CAPACITY", "CARGO_BEHIND_THIRD_ROW", "FUEL_ECONOMY",
+        "SLIDING_DOOR_TYPE"
+      ],
+      "valueAngles": [
+        "ultimate_family_hauler", "entertainment_on_wheels", "versatile_interior",
+        "fuel_efficient_family", "practical_luxury"
+      ]
+    },
+    "electric_vehicle": {
+      "label": "Electric Vehicle",
+      "examples": ["Model 3", "Model Y", "Mach-E", "ID.4", "Ioniq 5", "EV6", "Bolt", "Ariya", "Lyriq"],
+      "leadPriorities": [
+        "RANGE",
+        "CHARGING_SPEED",
+        "PERFORMANCE",
+        "TAX_CREDITS",
+        "TECHNOLOGY",
+        "RUNNING_COSTS",
+        "INTERIOR_SPACE",
+        "ADAS_SUITE"
+      ],
+      "tableStakes": [
+        "AEB", "REARVIEW_CAMERA", "REGENERATIVE_BRAKING"
+      ],
+      "midTrimPriority": [
+        "FAST_CHARGING", "APPLE_CARPLAY", "HEATED_FRONT_SEATS",
+        "BLIND_SPOT_MONITORING", "AWD_DUAL_MOTOR", "ONE_PEDAL_DRIVING"
+      ],
+      "topTrimPriority": [
+        "LONG_RANGE_BATTERY", "PREMIUM_AUDIO", "PANORAMIC_ROOF",
+        "HUD", "360_CAMERA", "VENTILATED_FRONT_SEATS", "AIR_SUSPENSION",
+        "VEHICLE_TO_LOAD"
+      ],
+      "mustMentionSpecs": [
+        "EPA_RANGE", "BATTERY_SIZE", "CHARGING_SPEED", "AWD_OR_RWD",
+        "HORSEPOWER", "ZERO_TO_SIXTY"
+      ],
+      "valueAngles": [
+        "zero_emissions", "low_running_cost", "instant_torque",
+        "tech_forward", "tax_credit_eligible", "home_charging"
+      ]
+    }
+  },
+  "modifiers": {
+    "hybrid": {
+      "boostFeatures": ["HYBRID_POWERTRAIN", "FUEL_ECONOMY", "REGENERATIVE_BRAKING"],
+      "valueAngleOverride": "fuel_savings_hybrid"
+    },
+    "plugin_hybrid": {
+      "boostFeatures": ["PHEV_RANGE", "TAX_CREDIT", "HOME_CHARGING", "FUEL_ECONOMY"],
+      "valueAngleOverride": "best_of_both_worlds"
+    },
+    "diesel": {
+      "boostFeatures": ["DIESEL_ENGINE", "TORQUE", "TOWING_CAPACITY", "FUEL_ECONOMY"],
+      "valueAngleOverride": "diesel_torque_and_range"
+    },
+    "used_under_50k_miles": {
+      "boostFeatures": ["LOW_MILES", "CLEAN_TITLE", "ONE_OWNER", "REMAINING_WARRANTY"],
+      "valueAngleOverride": null
+    },
+    "certified_preowned": {
+      "boostFeatures": ["CPO_WARRANTY", "INSPECTED", "CLEAN_TITLE"],
+      "valueAngleOverride": "peace_of_mind"
+    }
+  }
+}

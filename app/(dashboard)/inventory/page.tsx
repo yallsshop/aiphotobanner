@@ -37,6 +37,7 @@ export default function InventoryPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
+  const [importStatus, setImportStatus] = useState('')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [search, setSearch] = useState('')
@@ -64,11 +65,28 @@ export default function InventoryPage() {
     if (!file) return
 
     setImporting(true)
+    setImportStatus('')
     try {
-      const text = await file.text()
-      const data = JSON.parse(text)
-      const vehicleArray = Array.isArray(data) ? data : [data]
+      let vehicleArray: Record<string, unknown>[]
 
+      // Fast path: try JSON parse first
+      const isJson = file.name.toLowerCase().endsWith('.json')
+      if (isJson) {
+        try {
+          const text = await file.text()
+          const data = JSON.parse(text)
+          vehicleArray = Array.isArray(data) ? data : [data]
+          setImportStatus('Importing vehicles...')
+        } catch {
+          // JSON parse failed — fall through to AI parser
+          vehicleArray = await parseWithAI(file)
+        }
+      } else {
+        // Non-JSON file — use AI parser
+        vehicleArray = await parseWithAI(file)
+      }
+
+      setImportStatus('Importing vehicles...')
       const res = await fetch('/api/inventory/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,8 +105,28 @@ export default function InventoryPage() {
       alert(err instanceof Error ? err.message : 'Import failed')
     } finally {
       setImporting(false)
+      setImportStatus('')
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
+  }
+
+  async function parseWithAI(file: File): Promise<Record<string, unknown>[]> {
+    setImportStatus('Parsing file with AI...')
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const parseRes = await fetch('/api/inventory/parse', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!parseRes.ok) {
+      const err = await parseRes.json()
+      throw new Error(err.error || 'AI parsing failed')
+    }
+
+    const parsed = await parseRes.json()
+    return parsed.vehicles
   }
 
   const pendingCount = vehicles.filter(v => !v.photo_status || v.photo_status === 'pending').length
@@ -136,6 +174,7 @@ export default function InventoryPage() {
           {/* View toggle */}
           <div className="flex bg-surface border border-border rounded-lg p-0.5">
             <button
+              title="Grid view"
               onClick={() => setViewMode('grid')}
               className={`px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'grid' ? 'bg-accent-glow text-accent' : 'text-muted hover:text-foreground'}`}
             >
@@ -144,6 +183,7 @@ export default function InventoryPage() {
               </svg>
             </button>
             <button
+              title="Table view"
               onClick={() => setViewMode('table')}
               className={`px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'table' ? 'bg-accent-glow text-accent' : 'text-muted hover:text-foreground'}`}
             >
@@ -154,11 +194,11 @@ export default function InventoryPage() {
           </div>
 
           <label className="btn-primary px-5 py-2.5 rounded-lg text-sm cursor-pointer font-semibold">
-            {importing ? 'Importing...' : 'Import Feed'}
+            {importing ? (importStatus || 'Importing...') : 'Import Feed'}
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json"
+              accept=".json,.csv,.tsv,.txt,.xml,.xlsx,.xls,.html,.yml,.yaml"
               onChange={handleImport}
               className="hidden"
               disabled={importing}
@@ -168,7 +208,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="animate-fade-up flex gap-1 mb-4 bg-surface border border-border rounded-lg p-1 w-fit" style={{ animationDelay: '50ms' }}>
+      <div className="animate-fade-up [animation-delay:50ms] flex gap-1 mb-4 bg-surface border border-border rounded-lg p-1 w-fit">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -192,7 +232,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Search */}
-      <div className="animate-fade-up mb-6" style={{ animationDelay: '100ms' }}>
+      <div className="animate-fade-up [animation-delay:100ms] mb-6">
         <input
           type="text"
           value={search}
@@ -207,7 +247,7 @@ export default function InventoryPage() {
           <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
       ) : vehicles.length === 0 ? (
-        <div className="animate-fade-up bg-surface border border-border rounded-xl p-12 text-center" style={{ animationDelay: '200ms' }}>
+        <div className="animate-fade-up [animation-delay:200ms] bg-surface border border-border rounded-xl p-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-accent-glow flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
@@ -215,7 +255,7 @@ export default function InventoryPage() {
           </div>
           <h2 className="font-[family-name:var(--font-display)] text-xl font-600 mb-2">No Inventory Yet</h2>
           <p className="text-muted text-sm max-w-md mx-auto mb-4">
-            Import your DMS feed JSON to see your vehicles here
+            Import your inventory from any file format — JSON, CSV, text, XML, and more
           </p>
         </div>
       ) : filtered.length === 0 ? (
@@ -302,7 +342,7 @@ export default function InventoryPage() {
         </div>
       ) : (
         /* Table View */
-        <div className="animate-fade-up bg-surface border border-border rounded-xl overflow-hidden" style={{ animationDelay: '200ms' }}>
+        <div className="animate-fade-up [animation-delay:200ms] bg-surface border border-border rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

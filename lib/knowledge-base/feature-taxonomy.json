@@ -1,0 +1,734 @@
+{
+  "features": {
+    "THIRD_ROW_SEATING": {
+      "displayLabelLong": "THIRD ROW SEATING",
+      "displayLabelShort": "3RD ROW",
+      "seoTerms": ["third row", "third row seating", "3rd row", "7 passenger", "8 passenger"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_rear", "interior_rear", "trunk"],
+      "segmentBoosts": { "full_size_3row_suv": 10, "midsize_suv_crossover": 8, "minivan": 7 }
+    },
+    "CAPTAINS_CHAIRS": {
+      "displayLabelLong": "CAPTAIN'S CHAIRS",
+      "displayLabelShort": "CAPTAINS CHAIRS",
+      "seoTerms": ["captain's chairs", "captains chairs", "second row captains"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["interior_rear", "interior_front", "hero"],
+      "segmentBoosts": { "full_size_3row_suv": 8, "minivan": 7, "luxury_suv": 6 }
+    },
+    "POWER_FOLDING_THIRD_ROW": {
+      "displayLabelLong": "POWER-FOLDING THIRD ROW",
+      "displayLabelShort": "PWR FOLD 3RD ROW",
+      "seoTerms": ["power folding third row"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["trunk", "interior_rear"],
+      "segmentBoosts": { "full_size_3row_suv": 7, "minivan": 6 }
+    },
+    "HEATED_FRONT_SEATS": {
+      "displayLabelLong": "HEATED FRONT SEATS",
+      "displayLabelShort": "HEATED SEATS",
+      "seoTerms": ["heated seats", "heated front seats"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["interior_front", "dashboard", "detail"],
+      "segmentBoosts": { "midsize_suv_crossover": 6, "compact_suv_crossover": 5, "luxury_suv": 3, "half_ton_truck": 5, "midsize_sedan": 6, "compact_sedan": 6 }
+    },
+    "VENTILATED_FRONT_SEATS": {
+      "displayLabelLong": "VENTILATED FRONT SEATS",
+      "displayLabelShort": "COOLED SEATS",
+      "seoTerms": ["ventilated seats", "cooled seats", "air conditioned seats"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["interior_front", "detail"],
+      "segmentBoosts": { "luxury_suv": 7, "luxury_sedan": 7, "full_size_3row_suv": 6, "half_ton_truck": 6 }
+    },
+    "MASSAGING_SEATS": {
+      "displayLabelLong": "MASSAGING FRONT SEATS",
+      "displayLabelShort": "MASSAGE SEATS",
+      "seoTerms": ["massaging seats", "massage seats"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["interior_front", "detail"],
+      "segmentBoosts": { "luxury_suv": 8, "luxury_sedan": 8, "half_ton_truck": 7 }
+    },
+    "HEATED_STEERING_WHEEL": {
+      "displayLabelLong": "HEATED STEERING WHEEL",
+      "displayLabelShort": "HTD STEERING",
+      "seoTerms": ["heated steering wheel"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["dashboard", "detail"],
+      "segmentBoosts": { "midsize_suv_crossover": 4, "luxury_suv": 3, "half_ton_truck": 4 }
+    },
+    "LEATHER_SEATS": {
+      "displayLabelLong": "LEATHER SEATS",
+      "displayLabelShort": "LEATHER",
+      "seoTerms": ["leather seats", "leather interior", "premium leather"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["interior_front", "interior_rear", "detail"],
+      "segmentBoosts": { "midsize_suv_crossover": 6, "compact_suv_crossover": 7, "midsize_sedan": 6, "compact_sedan": 7, "half_ton_truck": 5 }
+    },
+    "MEMORY_SEATS": {
+      "displayLabelLong": "MEMORY SEATS",
+      "displayLabelShort": "MEMORY SEATS",
+      "seoTerms": ["memory seats", "driver memory"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["detail", "interior_front"],
+      "segmentBoosts": { "luxury_suv": 4, "luxury_sedan": 4 }
+    },
+    "WIRELESS_APPLE_CARPLAY": {
+      "displayLabelLong": "WIRELESS APPLE CARPLAY",
+      "displayLabelShort": "WIRELESS CARPLAY",
+      "seoTerms": ["wireless carplay", "wireless apple carplay"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["dashboard", "detail"],
+      "segmentBoosts": { "midsize_suv_crossover": 7, "compact_suv_crossover": 7, "midsize_sedan": 7, "compact_sedan": 7, "half_ton_truck": 5, "luxury_suv": 4, "minivan": 6 }
+    },
+    "APPLE_CARPLAY": {
+      "displayLabelLong": "APPLE CARPLAY & ANDROID AUTO",
+      "displayLabelShort": "CARPLAY",
+      "seoTerms": ["apple carplay", "android auto", "carplay"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard", "detail"],
+      "segmentBoosts": { "compact_suv_crossover": 5, "compact_sedan": 5, "midsize_sedan": 4 }
+    },
+    "PANORAMIC_ROOF": {
+      "displayLabelLong": "PANORAMIC SUNROOF",
+      "displayLabelShort": "PANO ROOF",
+      "seoTerms": ["panoramic roof", "panoramic sunroof", "pano roof"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_side", "interior_front"],
+      "segmentBoosts": { "midsize_suv_crossover": 7, "luxury_suv": 6, "luxury_sedan": 6, "compact_suv_crossover": 7, "midsize_sedan": 7 }
+    },
+    "SUNROOF": {
+      "displayLabelLong": "POWER SUNROOF",
+      "displayLabelShort": "SUNROOF",
+      "seoTerms": ["sunroof", "moonroof", "power sunroof"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_side", "interior_front"],
+      "segmentBoosts": { "compact_sedan": 6, "midsize_sedan": 5, "compact_suv_crossover": 5 }
+    },
+    "PREMIUM_AUDIO": {
+      "displayLabelLong": "PREMIUM AUDIO SYSTEM",
+      "displayLabelShort": "PREMIUM AUDIO",
+      "seoTerms": ["premium audio", "premium sound"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard", "detail", "interior_front"],
+      "segmentBoosts": { "luxury_suv": 5, "luxury_sedan": 5, "half_ton_truck": 5 }
+    },
+    "BOSE_AUDIO": {
+      "displayLabelLong": "BOSE PREMIUM AUDIO",
+      "displayLabelShort": "BOSE",
+      "seoTerms": ["bose", "bose audio", "bose sound system"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["detail", "dashboard"],
+      "segmentBoosts": { "luxury_suv": 6, "midsize_suv_crossover": 6, "luxury_sedan": 6 }
+    },
+    "HARMAN_KARDON_AUDIO": {
+      "displayLabelLong": "HARMAN KARDON AUDIO",
+      "displayLabelShort": "HARMAN KARDON",
+      "seoTerms": ["harman kardon", "harman kardon audio"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["detail", "dashboard"],
+      "segmentBoosts": { "luxury_suv": 6, "luxury_sedan": 6 }
+    },
+    "BANG_OLUFSEN_AUDIO": {
+      "displayLabelLong": "BANG & OLUFSEN AUDIO",
+      "displayLabelShort": "B&O AUDIO",
+      "seoTerms": ["bang and olufsen", "b&o", "b&o audio"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["detail", "dashboard"],
+      "segmentBoosts": { "luxury_suv": 7, "luxury_sedan": 7, "half_ton_truck": 7 }
+    },
+    "NAVIGATION": {
+      "displayLabelLong": "BUILT-IN NAVIGATION",
+      "displayLabelShort": "NAV",
+      "seoTerms": ["navigation", "built-in nav", "gps"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard"],
+      "segmentBoosts": { "midsize_suv_crossover": 4, "luxury_suv": 3, "half_ton_truck": 3 }
+    },
+    "HUD": {
+      "displayLabelLong": "HEADS-UP DISPLAY",
+      "displayLabelShort": "HUD",
+      "seoTerms": ["heads up display", "hud", "head up display"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["dashboard", "interior_front"],
+      "segmentBoosts": { "luxury_suv": 7, "luxury_sedan": 7, "full_size_3row_suv": 5, "half_ton_truck": 5 }
+    },
+    "DIGITAL_CLUSTER": {
+      "displayLabelLong": "DIGITAL INSTRUMENT CLUSTER",
+      "displayLabelShort": "DIGITAL CLUSTER",
+      "seoTerms": ["digital cluster", "digital instrument cluster", "digital gauges"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard"],
+      "segmentBoosts": { "compact_sedan": 5, "midsize_sedan": 4, "compact_suv_crossover": 4 }
+    },
+    "WIRELESS_CHARGING": {
+      "displayLabelLong": "WIRELESS PHONE CHARGING",
+      "displayLabelShort": "WIRELESS CHARGING",
+      "seoTerms": ["wireless charging", "qi charging"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["detail", "dashboard"],
+      "segmentBoosts": { "midsize_suv_crossover": 4, "compact_suv_crossover": 4, "midsize_sedan": 4 }
+    },
+    "BLIND_SPOT_MONITORING": {
+      "displayLabelLong": "BLIND SPOT MONITORING",
+      "displayLabelShort": "BLIND SPOT",
+      "seoTerms": ["blind spot monitoring", "blind spot detection", "bsm"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "exterior_rear"],
+      "segmentBoosts": { "midsize_suv_crossover": 5, "compact_suv_crossover": 5, "midsize_sedan": 5, "compact_sedan": 5 }
+    },
+    "ADAPTIVE_CRUISE_CONTROL": {
+      "displayLabelLong": "ADAPTIVE CRUISE CONTROL",
+      "displayLabelShort": "ADAPTIVE CRUISE",
+      "seoTerms": ["adaptive cruise control", "radar cruise"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "dashboard", "detail"],
+      "segmentBoosts": { "midsize_suv_crossover": 6, "midsize_sedan": 6, "luxury_suv": 4, "half_ton_truck": 5 }
+    },
+    "HANDS_FREE_DRIVING": {
+      "displayLabelLong": "HANDS-FREE HIGHWAY DRIVING",
+      "displayLabelShort": "HANDS-FREE",
+      "seoTerms": ["hands free driving", "supercruise", "bluecruise", "autopilot"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "dashboard"],
+      "segmentBoosts": { "luxury_suv": 8, "luxury_sedan": 8, "half_ton_truck": 7, "electric_vehicle": 7 }
+    },
+    "BLUECRUISE": {
+      "displayLabelLong": "BLUECRUISE HANDS-FREE DRIVING",
+      "displayLabelShort": "BLUECRUISE",
+      "seoTerms": ["bluecruise", "blue cruise", "hands free driving ford"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "dashboard"],
+      "segmentBoosts": { "half_ton_truck": 8, "full_size_3row_suv": 7, "luxury_suv": 7 }
+    },
+    "360_CAMERA": {
+      "displayLabelLong": "360-DEGREE CAMERA SYSTEM",
+      "displayLabelShort": "360 CAMERA",
+      "seoTerms": ["360 camera", "surround view", "bird's eye view camera"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard", "hero", "exterior_front"],
+      "segmentBoosts": { "full_size_3row_suv": 7, "luxury_suv": 6, "half_ton_truck": 7, "heavy_duty_truck": 7 }
+    },
+    "BACKUP_CAMERA": {
+      "displayLabelLong": "REARVIEW CAMERA",
+      "displayLabelShort": "BACKUP CAM",
+      "seoTerms": ["backup camera", "rearview camera", "rear camera"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "PARKING_SENSORS": {
+      "displayLabelLong": "PARKING SENSORS",
+      "displayLabelShort": "PARK SENSORS",
+      "seoTerms": ["parking sensors", "park assist sensors"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_front", "exterior_rear"],
+      "segmentBoosts": { "luxury_suv": 3, "luxury_sedan": 3 }
+    },
+    "POWER_LIFTGATE": {
+      "displayLabelLong": "POWER LIFTGATE",
+      "displayLabelShort": "PWR LIFTGATE",
+      "seoTerms": ["power liftgate", "hands free liftgate", "power tailgate"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["trunk", "exterior_rear"],
+      "segmentBoosts": { "full_size_3row_suv": 6, "midsize_suv_crossover": 6, "luxury_suv": 4, "minivan": 5 }
+    },
+    "REMOTE_START": {
+      "displayLabelLong": "REMOTE START",
+      "displayLabelShort": "REMOTE START",
+      "seoTerms": ["remote start"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "midsize_suv_crossover": 4, "half_ton_truck": 4, "midsize_sedan": 4 }
+    },
+    "PUSH_BUTTON_START": {
+      "displayLabelLong": "PUSH BUTTON START",
+      "displayLabelShort": "PUSH START",
+      "seoTerms": ["push button start", "keyless start"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["dashboard", "detail"],
+      "segmentBoosts": { "compact_sedan": 4, "compact_suv_crossover": 4 }
+    },
+    "KEYLESS_ENTRY": {
+      "displayLabelLong": "KEYLESS ENTRY",
+      "displayLabelShort": "KEYLESS",
+      "seoTerms": ["keyless entry", "smart key"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "compact_sedan": 3, "compact_suv_crossover": 3 }
+    },
+    "AWD": {
+      "displayLabelLong": "ALL-WHEEL DRIVE",
+      "displayLabelShort": "AWD",
+      "seoTerms": ["awd", "all wheel drive", "all-wheel drive"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "exterior_rear", "exterior_side"],
+      "segmentBoosts": { "midsize_suv_crossover": 8, "compact_suv_crossover": 8, "luxury_suv": 5, "midsize_sedan": 7, "luxury_sedan": 5 }
+    },
+    "FOUR_WHEEL_DRIVE": {
+      "displayLabelLong": "FOUR-WHEEL DRIVE",
+      "displayLabelShort": "4WD",
+      "seoTerms": ["4wd", "4x4", "four wheel drive"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "exterior_rear"],
+      "segmentBoosts": { "half_ton_truck": 8, "heavy_duty_truck": 8, "full_size_3row_suv": 7 }
+    },
+    "TURBO_ENGINE": {
+      "displayLabelLong": "TURBOCHARGED ENGINE",
+      "displayLabelShort": "TURBO",
+      "seoTerms": ["turbo", "turbocharged", "twin turbo"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["engine", "hero", "exterior_front"],
+      "segmentBoosts": { "sports_car": 7, "luxury_sedan": 5, "compact_sedan": 5 }
+    },
+    "ECOBOOST": {
+      "displayLabelLong": "ECOBOOST ENGINE",
+      "displayLabelShort": "ECOBOOST",
+      "seoTerms": ["ecoboost"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["engine", "hero"],
+      "segmentBoosts": { "half_ton_truck": 6, "full_size_3row_suv": 5, "midsize_suv_crossover": 5 }
+    },
+    "HYBRID_POWERTRAIN": {
+      "displayLabelLong": "HYBRID POWERTRAIN",
+      "displayLabelShort": "HYBRID",
+      "seoTerms": ["hybrid", "hybrid engine"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "engine", "exterior_front"],
+      "segmentBoosts": { "midsize_suv_crossover": 8, "compact_suv_crossover": 8, "midsize_sedan": 8, "half_ton_truck": 9, "minivan": 7, "full_size_3row_suv": 7 }
+    },
+    "DIESEL_ENGINE": {
+      "displayLabelLong": "DIESEL ENGINE",
+      "displayLabelShort": "DIESEL",
+      "seoTerms": ["diesel", "powerstroke", "duramax", "cummins"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["engine", "hero"],
+      "segmentBoosts": { "heavy_duty_truck": 10, "half_ton_truck": 7 }
+    },
+    "PRO_POWER_ONBOARD": {
+      "displayLabelLong": "PRO POWER ONBOARD GENERATOR",
+      "displayLabelShort": "PRO POWER",
+      "seoTerms": ["pro power onboard", "onboard generator"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["truck_bed", "hero"],
+      "segmentBoosts": { "half_ton_truck": 9 }
+    },
+    "TOW_PACKAGE": {
+      "displayLabelLong": "TOW PACKAGE",
+      "displayLabelShort": "TOW PKG",
+      "seoTerms": ["tow package", "trailer tow", "towing package"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_rear", "truck_bed"],
+      "segmentBoosts": { "half_ton_truck": 8, "heavy_duty_truck": 8, "full_size_3row_suv": 7 }
+    },
+    "MAX_TOW_PACKAGE": {
+      "displayLabelLong": "MAX TOW PACKAGE",
+      "displayLabelShort": "MAX TOW",
+      "seoTerms": ["max tow", "max tow package", "heavy duty tow"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "exterior_rear"],
+      "segmentBoosts": { "half_ton_truck": 9, "heavy_duty_truck": 9 }
+    },
+    "SPRAY_IN_BEDLINER": {
+      "displayLabelLong": "SPRAY-IN BEDLINER",
+      "displayLabelShort": "BEDLINER",
+      "seoTerms": ["spray in bedliner", "bed liner"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["truck_bed"],
+      "segmentBoosts": { "half_ton_truck": 5, "heavy_duty_truck": 5 }
+    },
+    "MULTIFUNCTION_TAILGATE": {
+      "displayLabelLong": "MULTI-FUNCTION TAILGATE",
+      "displayLabelShort": "MULTI TAILGATE",
+      "seoTerms": ["multipro tailgate", "multi-flex tailgate", "multifunction tailgate"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["truck_bed", "exterior_rear"],
+      "segmentBoosts": { "half_ton_truck": 6 }
+    },
+    "RUNNING_BOARDS": {
+      "displayLabelLong": "RUNNING BOARDS",
+      "displayLabelShort": "RUNNING BOARDS",
+      "seoTerms": ["running boards", "step bars"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_side"],
+      "segmentBoosts": { "half_ton_truck": 4, "heavy_duty_truck": 4, "full_size_3row_suv": 3 }
+    },
+    "LED_HEADLIGHTS": {
+      "displayLabelLong": "LED HEADLIGHTS",
+      "displayLabelShort": "LED LIGHTS",
+      "seoTerms": ["led headlights", "led lights"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_front", "hero"],
+      "segmentBoosts": { "compact_sedan": 5, "compact_suv_crossover": 5, "midsize_sedan": 4 }
+    },
+    "PREMIUM_WHEELS": {
+      "displayLabelLong": "PREMIUM ALLOY WHEELS",
+      "displayLabelShort": "PREMIUM WHEELS",
+      "seoTerms": ["alloy wheels", "premium wheels"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["wheels", "exterior_side", "hero"],
+      "segmentBoosts": { "sports_car": 5, "luxury_sedan": 4, "luxury_suv": 3 }
+    },
+    "POWER_SLIDING_DOORS": {
+      "displayLabelLong": "POWER SLIDING DOORS",
+      "displayLabelShort": "PWR SLIDING DOORS",
+      "seoTerms": ["power sliding doors"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_side", "hero"],
+      "segmentBoosts": { "minivan": 8 }
+    },
+    "REAR_SEAT_ENTERTAINMENT": {
+      "displayLabelLong": "REAR SEAT ENTERTAINMENT",
+      "displayLabelShort": "REAR ENTERTAINMENT",
+      "seoTerms": ["rear seat entertainment", "rear screen", "dvd player"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["interior_rear"],
+      "segmentBoosts": { "minivan": 7, "full_size_3row_suv": 5, "luxury_suv": 5 }
+    },
+    "LOW_MILES": {
+      "displayLabelLong": "LOW MILEAGE",
+      "displayLabelShort": "LOW MILES",
+      "seoTerms": ["low miles", "low mileage"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "dashboard"],
+      "segmentBoosts": { "midsize_suv_crossover": 7, "compact_suv_crossover": 7, "midsize_sedan": 7, "compact_sedan": 7, "luxury_suv": 6, "luxury_sedan": 6, "sports_car": 8, "half_ton_truck": 6 }
+    },
+    "ONE_OWNER": {
+      "displayLabelLong": "ONE OWNER VEHICLE",
+      "displayLabelShort": "1 OWNER",
+      "seoTerms": ["one owner", "1 owner", "single owner"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "midsize_suv_crossover": 6, "compact_suv_crossover": 6, "midsize_sedan": 6, "compact_sedan": 6, "luxury_suv": 5, "sports_car": 7, "half_ton_truck": 5 }
+    },
+    "CLEAN_TITLE": {
+      "displayLabelLong": "CLEAN TITLE",
+      "displayLabelShort": "CLEAN TITLE",
+      "seoTerms": ["clean title", "clean carfax"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "midsize_suv_crossover": 5, "compact_suv_crossover": 5, "midsize_sedan": 5, "compact_sedan": 5, "sports_car": 6 }
+    },
+    "CPO_WARRANTY": {
+      "displayLabelLong": "CERTIFIED PRE-OWNED",
+      "displayLabelShort": "CERTIFIED",
+      "seoTerms": ["certified pre-owned", "cpo", "certified"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "luxury_suv": 7, "luxury_sedan": 7, "midsize_suv_crossover": 6, "midsize_sedan": 6 }
+    },
+    "LONG_RANGE_BATTERY": {
+      "displayLabelLong": "LONG RANGE BATTERY",
+      "displayLabelShort": "LONG RANGE",
+      "seoTerms": ["long range", "extended range"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "electric_vehicle": 10 }
+    },
+    "FAST_CHARGING": {
+      "displayLabelLong": "DC FAST CHARGING",
+      "displayLabelShort": "FAST CHARGE",
+      "seoTerms": ["fast charging", "dc fast charging", "level 3 charging"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "detail"],
+      "segmentBoosts": { "electric_vehicle": 8 }
+    },
+    "AWD_DUAL_MOTOR": {
+      "displayLabelLong": "DUAL MOTOR AWD",
+      "displayLabelShort": "DUAL MOTOR AWD",
+      "seoTerms": ["dual motor", "dual motor awd"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "exterior_front"],
+      "segmentBoosts": { "electric_vehicle": 8 }
+    },
+    "ONE_PEDAL_DRIVING": {
+      "displayLabelLong": "ONE-PEDAL DRIVING",
+      "displayLabelShort": "1-PEDAL DRIVE",
+      "seoTerms": ["one pedal driving", "one pedal"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["dashboard"],
+      "segmentBoosts": { "electric_vehicle": 5 }
+    },
+    "VEHICLE_TO_LOAD": {
+      "displayLabelLong": "VEHICLE-TO-LOAD POWER",
+      "displayLabelShort": "V2L POWER",
+      "seoTerms": ["vehicle to load", "v2l", "bidirectional charging"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero", "detail"],
+      "segmentBoosts": { "electric_vehicle": 7 }
+    },
+    "PERFORMANCE_EXHAUST": {
+      "displayLabelLong": "PERFORMANCE EXHAUST",
+      "displayLabelShort": "SPORT EXHAUST",
+      "seoTerms": ["performance exhaust", "active exhaust", "sport exhaust"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_rear", "detail"],
+      "segmentBoosts": { "sports_car": 7 }
+    },
+    "BREMBO_BRAKES": {
+      "displayLabelLong": "BREMBO PERFORMANCE BRAKES",
+      "displayLabelShort": "BREMBO",
+      "seoTerms": ["brembo", "brembo brakes"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["wheels", "detail"],
+      "segmentBoosts": { "sports_car": 8 }
+    },
+    "LIMITED_SLIP_DIFF": {
+      "displayLabelLong": "LIMITED-SLIP DIFFERENTIAL",
+      "displayLabelShort": "LSD",
+      "seoTerms": ["limited slip differential", "lsd"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["hero"],
+      "segmentBoosts": { "sports_car": 7 }
+    },
+    "MANUAL_TRANSMISSION": {
+      "displayLabelLong": "MANUAL TRANSMISSION",
+      "displayLabelShort": "6-SPEED MANUAL",
+      "seoTerms": ["manual transmission", "stick shift", "6 speed manual"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["interior_front", "detail"],
+      "segmentBoosts": { "sports_car": 8 }
+    },
+    "M_SPORT_PACKAGE": {
+      "displayLabelLong": "M SPORT PACKAGE",
+      "displayLabelShort": "M SPORT",
+      "seoTerms": ["m sport", "m sport package"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "exterior_rear", "detail"],
+      "segmentBoosts": { "luxury_sedan": 8, "luxury_suv": 7 }
+    },
+    "AMG_LINE": {
+      "displayLabelLong": "AMG LINE PACKAGE",
+      "displayLabelShort": "AMG LINE",
+      "seoTerms": ["amg line", "amg package"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "exterior_rear", "detail"],
+      "segmentBoosts": { "luxury_sedan": 8, "luxury_suv": 7 }
+    },
+    "F_SPORT": {
+      "displayLabelLong": "F SPORT PACKAGE",
+      "displayLabelShort": "F SPORT",
+      "seoTerms": ["f sport", "f sport package"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "detail"],
+      "segmentBoosts": { "luxury_sedan": 8, "luxury_suv": 7 }
+    },
+    "STOW_N_GO": {
+      "displayLabelLong": "STOW 'N GO SEATING",
+      "displayLabelShort": "STOW N GO",
+      "seoTerms": ["stow n go", "stow and go"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": true,
+      "photoTypesWhereRelevant": ["interior_rear", "trunk"],
+      "segmentBoosts": { "minivan": 9 }
+    },
+    "ROOF_RAILS": {
+      "displayLabelLong": "ROOF RAILS",
+      "displayLabelShort": "ROOF RAILS",
+      "seoTerms": ["roof rails", "roof rack"],
+      "tableStakes": false,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["exterior_side", "hero"],
+      "segmentBoosts": {}
+    },
+    "OFF_ROAD_PACKAGE": {
+      "displayLabelLong": "OFF-ROAD PACKAGE",
+      "displayLabelShort": "OFF-ROAD PKG",
+      "seoTerms": ["off road package", "trail rated", "trd off road"],
+      "tableStakes": false,
+      "allowedInBanner": true,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": ["hero", "exterior_front", "exterior_side", "wheels"],
+      "segmentBoosts": { "midsize_suv_crossover": 7, "half_ton_truck": 7, "compact_suv_crossover": 7 }
+    },
+    "AEB": {
+      "displayLabelLong": "AUTOMATIC EMERGENCY BRAKING",
+      "displayLabelShort": "AUTO BRAKING",
+      "seoTerms": ["automatic emergency braking", "aeb"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "FORWARD_COLLISION_WARNING": {
+      "displayLabelLong": "FORWARD COLLISION WARNING",
+      "displayLabelShort": "FCW",
+      "seoTerms": ["forward collision warning"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "LANE_DEPARTURE_WARNING": {
+      "displayLabelLong": "LANE DEPARTURE WARNING",
+      "displayLabelShort": "LDW",
+      "seoTerms": ["lane departure warning"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "LANE_KEEP_ASSIST": {
+      "displayLabelLong": "LANE KEEP ASSIST",
+      "displayLabelShort": "LANE KEEP",
+      "seoTerms": ["lane keep assist", "lane centering"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "REARVIEW_CAMERA": {
+      "displayLabelLong": "REARVIEW CAMERA",
+      "displayLabelShort": "BACKUP CAM",
+      "seoTerms": ["rearview camera"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    },
+    "TPMS": {
+      "displayLabelLong": "TIRE PRESSURE MONITORING",
+      "displayLabelShort": "TPMS",
+      "seoTerms": ["tpms"],
+      "tableStakes": true,
+      "allowedInBanner": false,
+      "requiresSpecProof": false,
+      "photoTypesWhereRelevant": [],
+      "segmentBoosts": {}
+    }
+  }
+}

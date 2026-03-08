@@ -41,8 +41,7 @@ export default async function DashboardPage() {
         ].map((stat, i) => (
           <div
             key={stat.label}
-            className="animate-fade-up glass-card relative overflow-hidden p-6"
-            style={{ animationDelay: `${i * 100 + 100}ms` }}
+            className={`animate-fade-up glass-card relative overflow-hidden p-6 ${i === 0 ? '[animation-delay:100ms]' : i === 1 ? '[animation-delay:200ms]' : i === 2 ? '[animation-delay:300ms]' : '[animation-delay:400ms]'}`}
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-accent-pink" />
             <p className="text-sm text-muted mb-1">{stat.label}</p>
@@ -53,7 +52,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="animate-fade-up" style={{ animationDelay: '400ms' }}>
+      <div className="animate-fade-up [animation-delay:400ms]">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-600 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link

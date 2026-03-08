@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { join } from 'path'
 import { GoogleGenAI } from '@google/genai'
+import {
+  MODELS, BANNED_WORDS as BANNED_WORDS_LIST, FILLER_PHRASES as FILLER_PHRASES_LIST,
+  buildBannerPrompt, buildFeatureOverlayPrompt,
+} from '@/lib/ai-prompts'
 
 // Allow up to 2 minutes for AI banner generation
 export const maxDuration = 120
@@ -25,17 +29,9 @@ interface BannerRequest {
   imageQuality?: '1K' | '2K' | '4K'
 }
 
-// Profanity + garbage filter — catches truncation artifacts and inappropriate text
-const BANNED_WORDS = [
-  'shit', 'fuck', 'damn', 'ass', 'hell', 'bitch', 'crap', 'dick', 'piss',
-]
-const FILLER_PHRASES = [
-  'SLEEK REAR DESIGN', 'BOLD FRONT STYLING', 'ELEGANT SIDE VIEW',
-  'SLEEK PROFILE', 'DRIVER-FOCUSED', 'COMFORTABLE REAR',
-  'SPACIOUS TRUNK', 'GENEROUS CARGO', 'MODERN DASHBOARD',
-  'STYLISH DESIGN', 'PREMIUM LOOK', 'ELEGANT DESIGN',
-  'BOLD STYLING', 'SHARP DESIGN', 'CLEAN LINES',
-]
+// Content rules imported from lib/ai-prompts.ts
+const BANNED_WORDS = BANNED_WORDS_LIST
+const FILLER_PHRASES = FILLER_PHRASES_LIST
 
 function sanitizeBannerText(text: string): string {
   let cleaned = text.toUpperCase().trim()
@@ -205,36 +201,9 @@ async function createAiBanner(
   const dealerLine = `${dealerName.toUpperCase()}${phone ? '  |  ' + phone : ''}`
   const vehicleLabel = vehicleName ? vehicleName.toUpperCase() : ''
 
-  const modelId = aiModel === 'flash' ? 'gemini-3.1-flash-image-preview' : 'gemini-3-pro-image-preview'
+  const modelId = aiModel === 'flash' ? MODELS.imageFast : MODELS.imageHighQuality
 
-  const bottomSection = topOnly ? '' : `
-2. BOTTOM BANNER BAR: A dark/black banner bar across the ENTIRE bottom edge (about 6-8% of image height).
-   - Left side: "${dealerLine}" in white text
-   - Right side: "SHIPPING NATIONWIDE" in ${brandColor} colored text
-   - Below that: "BUY FROM ANYWHERE" in smaller grey text`
-
-  const prompt = `You are a professional automotive graphic designer creating a car dealership listing photo.
-
-TASK: Add professional dealership banner overlay${topOnly ? '' : 's'} to this vehicle photo.
-
-=== WHAT TO ADD ===
-1. TOP BANNER BAR: A solid colored banner bar across the ENTIRE top edge of the image (about 8-10% of image height).
-   - Background color: ${brandColor} (with a subtle gradient darker at edges)
-   - Text in the center: "${headline}" in bold white uppercase letters
-   ${vehicleLabel ? `- Below or beside the headline, smaller: "${vehicleLabel}"` : ''}
-${bottomSection}
-
-=== ABSOLUTE RULES — CRITICAL ===
-- The vehicle in the photo must remain COMPLETELY UNCHANGED — same exact color, angle, reflections, shadows, badges, wheels, everything
-- Do NOT alter, retouch, recolor, move, resize, or modify the vehicle in ANY way
-- Do NOT change the background or environment behind the vehicle
-- ONLY add the banner bar${topOnly ? '' : 's'} as opaque overlay${topOnly ? '' : 's'} on top of the existing image
-- The banners must be clean, sharp, and professional — like a real dealership overlay
-- Text must be perfectly legible and correctly spelled
-- The banner bars should be opaque (not transparent) — they cover whatever is behind them
-- Keep the aspect ratio exactly the same as the input image
-
-Think of this like placing sticker overlays on top of a photo — the photo underneath stays perfectly intact.`
+  const prompt = buildBannerPrompt({ headline, brandColor, vehicleLabel, dealerLine, topOnly })
 
   try {
     const response = await ai.models.generateContent({
@@ -277,34 +246,11 @@ async function createAiFeatureOverlay(
   if (!apiKey) return null
 
   const ai = new GoogleGenAI({ apiKey })
-  const modelId = aiModel === 'flash' ? 'gemini-3.1-flash-image-preview' : 'gemini-3-pro-image-preview'
+  const modelId = aiModel === 'flash' ? MODELS.imageFast : MODELS.imageHighQuality
 
   const featureList = features.slice(0, 15).map(f => `• ${f.toUpperCase()}`).join('\n')
 
-  const prompt = `You are a professional automotive graphic designer. Add a feature list overlay to this vehicle photo.
-
-=== WHAT TO CREATE ===
-Add a semi-transparent dark overlay on the LEFT SIDE of the image (about 40-50% of width) with:
-
-1. TITLE at the top: "${title}" in large bold ${brandColor} colored text
-2. A thin vertical accent line in ${brandColor} on the left edge of the overlay
-3. FEATURE LIST below the title, each on its own line in white text:
-${featureList}
-
-=== STYLE RULES ===
-- The overlay should be dark (black at ~65% opacity) so the car is dimly visible behind it
-- The right side of the image should show the vehicle clearly (no overlay there)
-- Text must be crisp, clean, perfectly spelled, and easy to read
-- Use a clean sans-serif font (like Helvetica or Arial)
-- Title should be noticeably larger than the feature items
-- Feature items should have bullet points (•) and consistent spacing
-- The overall look should be premium and professional — like a luxury car brochure
-- Keep the image the EXACT same size and aspect ratio as the input
-
-=== ABSOLUTE RULES ===
-- Do NOT modify the vehicle photo itself — only ADD the overlay on top
-- All text must be EXACTLY as specified above — no rewording, no extra text
-- Keep it clean and minimal — no decorative elements beyond what's specified`
+  const prompt = buildFeatureOverlayPrompt({ title, featureList, brandColor })
 
   try {
     const response = await ai.models.generateContent({

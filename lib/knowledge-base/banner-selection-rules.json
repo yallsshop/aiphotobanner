@@ -1,0 +1,132 @@
+{
+  "photoTypeMapping": {
+    "exterior_front": {
+      "preferFeatures": ["AWD", "FOUR_WHEEL_DRIVE", "LED_HEADLIGHTS", "TOW_PACKAGE", "HYBRID_POWERTRAIN", "OFF_ROAD_PACKAGE", "M_SPORT_PACKAGE", "AMG_LINE", "F_SPORT", "TURBO_ENGINE", "ECOBOOST"],
+      "avoidFeatures": ["HEATED_FRONT_SEATS", "LEATHER_SEATS", "APPLE_CARPLAY"]
+    },
+    "exterior_rear": {
+      "preferFeatures": ["POWER_LIFTGATE", "TOW_PACKAGE", "BLIND_SPOT_MONITORING", "PERFORMANCE_EXHAUST", "THIRD_ROW_SEATING"],
+      "avoidFeatures": ["APPLE_CARPLAY", "HEATED_FRONT_SEATS", "NAVIGATION"]
+    },
+    "exterior_side": {
+      "preferFeatures": ["PANORAMIC_ROOF", "RUNNING_BOARDS", "POWER_SLIDING_DOORS", "PREMIUM_WHEELS", "OFF_ROAD_PACKAGE"],
+      "avoidFeatures": ["HEATED_FRONT_SEATS", "APPLE_CARPLAY"]
+    },
+    "interior_front": {
+      "preferFeatures": ["LEATHER_SEATS", "HEATED_FRONT_SEATS", "VENTILATED_FRONT_SEATS", "MASSAGING_SEATS", "CAPTAINS_CHAIRS", "WIRELESS_APPLE_CARPLAY", "PANORAMIC_ROOF"],
+      "avoidFeatures": ["TOW_PACKAGE", "LED_HEADLIGHTS", "AWD"]
+    },
+    "interior_rear": {
+      "preferFeatures": ["THIRD_ROW_SEATING", "CAPTAINS_CHAIRS", "REAR_SEAT_ENTERTAINMENT", "POWER_FOLDING_THIRD_ROW", "STOW_N_GO"],
+      "avoidFeatures": ["AWD", "TOW_PACKAGE", "LED_HEADLIGHTS"]
+    },
+    "dashboard": {
+      "preferFeatures": ["WIRELESS_APPLE_CARPLAY", "APPLE_CARPLAY", "NAVIGATION", "HUD", "DIGITAL_CLUSTER", "360_CAMERA", "WIRELESS_CHARGING", "PREMIUM_AUDIO", "BOSE_AUDIO", "HARMAN_KARDON_AUDIO", "BANG_OLUFSEN_AUDIO"],
+      "avoidFeatures": ["TOW_PACKAGE", "LED_HEADLIGHTS", "AWD", "POWER_LIFTGATE"]
+    },
+    "engine": {
+      "preferFeatures": ["TURBO_ENGINE", "ECOBOOST", "HYBRID_POWERTRAIN", "DIESEL_ENGINE"],
+      "avoidFeatures": ["HEATED_FRONT_SEATS", "APPLE_CARPLAY", "LEATHER_SEATS"]
+    },
+    "wheels": {
+      "preferFeatures": ["PREMIUM_WHEELS", "BREMBO_BRAKES", "OFF_ROAD_PACKAGE"],
+      "avoidFeatures": ["APPLE_CARPLAY", "HEATED_FRONT_SEATS"]
+    },
+    "trunk": {
+      "preferFeatures": ["POWER_LIFTGATE", "THIRD_ROW_SEATING", "POWER_FOLDING_THIRD_ROW", "STOW_N_GO"],
+      "avoidFeatures": ["AWD", "LED_HEADLIGHTS", "TURBO_ENGINE"]
+    },
+    "truck_bed": {
+      "preferFeatures": ["SPRAY_IN_BEDLINER", "PRO_POWER_ONBOARD", "MULTIFUNCTION_TAILGATE", "TOW_PACKAGE", "MAX_TOW_PACKAGE"],
+      "avoidFeatures": ["HEATED_FRONT_SEATS", "APPLE_CARPLAY"]
+    },
+    "detail": {
+      "preferFeatures": ["BOSE_AUDIO", "HARMAN_KARDON_AUDIO", "BANG_OLUFSEN_AUDIO", "HEATED_FRONT_SEATS", "VENTILATED_FRONT_SEATS", "WIRELESS_CHARGING", "PUSH_BUTTON_START", "BREMBO_BRAKES"],
+      "avoidFeatures": ["AWD", "TOW_PACKAGE"]
+    },
+    "hero": {
+      "preferFeatures": ["AWD", "FOUR_WHEEL_DRIVE", "HYBRID_POWERTRAIN", "LOW_MILES", "ONE_OWNER", "CLEAN_TITLE", "CPO_WARRANTY", "THIRD_ROW_SEATING", "TOW_PACKAGE", "LONG_RANGE_BATTERY"],
+      "avoidFeatures": []
+    },
+    "other": {
+      "preferFeatures": [],
+      "avoidFeatures": []
+    }
+  },
+  "scoringWeights": {
+    "segmentPriority": 3.0,
+    "sourceConfidence": 1.5,
+    "photoRelevance": 2.0,
+    "trimRelevance": 1.0,
+    "searchDemand": 1.5,
+    "uniquenessBonus": 2.0,
+    "tableStakesPenalty": -10.0,
+    "alreadyUsedPenalty": -15.0,
+    "genericPenalty": -5.0,
+    "photoAvoidPenalty": -3.0,
+    "photoPreferBonus": 2.0
+  },
+  "bannerConstraints": {
+    "maxCharacters": 40,
+    "separator": " | ",
+    "maxFeatures": 3,
+    "minFeatures": 1,
+    "casing": "UPPER"
+  },
+  "segmentClassificationHints": {
+    "full_size_3row_suv": {
+      "makes": ["Ford", "Chevrolet", "Toyota", "Nissan", "Jeep"],
+      "models": ["Expedition", "Tahoe", "Suburban", "Sequoia", "Armada", "Wagoneer", "Grand Wagoneer"],
+      "traits": ["third_row", "towing_over_7000"]
+    },
+    "midsize_suv_crossover": {
+      "makes": ["Honda", "Toyota", "Hyundai", "Kia", "Ford", "Subaru", "Mazda", "Chevrolet"],
+      "models": ["CR-V", "RAV4", "Tucson", "Sportage", "Escape", "Outback", "CX-50", "CX-5", "Edge", "Explorer", "Sorento", "Santa Fe"],
+      "traits": ["two_row_or_optional_third"]
+    },
+    "compact_suv_crossover": {
+      "makes": ["Honda", "Toyota", "Chevrolet", "Kia", "Nissan", "Hyundai", "Mazda"],
+      "models": ["HR-V", "Corolla Cross", "Trax", "Seltos", "Kicks", "Venue", "CX-30", "Trailblazer", "Kona"],
+      "traits": ["subcompact_suv"]
+    },
+    "luxury_suv": {
+      "makes": ["BMW", "Mercedes-Benz", "Audi", "Lexus", "Acura", "Lincoln", "Cadillac", "Genesis", "Volvo", "Land Rover", "Porsche"],
+      "models": ["X5", "X3", "GLE", "GLC", "Q7", "Q5", "RX", "NX", "MDX", "Aviator", "Navigator", "Escalade", "GV70", "GV80", "XC90", "XC60"],
+      "traits": ["luxury_brand"]
+    },
+    "half_ton_truck": {
+      "models": ["F-150", "Silverado 1500", "RAM 1500", "Tundra", "Titan", "Sierra 1500", "Ranger", "Tacoma", "Colorado", "Canyon", "Frontier", "Maverick", "Santa Cruz"],
+      "traits": ["pickup_truck", "half_ton_or_midsize"]
+    },
+    "heavy_duty_truck": {
+      "models": ["F-250", "F-350", "F-450", "Silverado 2500HD", "Silverado 3500HD", "RAM 2500", "RAM 3500", "Sierra 2500HD", "Sierra 3500HD"],
+      "traits": ["heavy_duty"]
+    },
+    "midsize_sedan": {
+      "models": ["Camry", "Accord", "Sonata", "K5", "Malibu", "Altima", "Mazda6", "Legacy"],
+      "traits": ["midsize_sedan"]
+    },
+    "compact_sedan": {
+      "models": ["Civic", "Corolla", "Elantra", "Forte", "Sentra", "Mazda3", "Jetta", "Impreza"],
+      "traits": ["compact_sedan"]
+    },
+    "luxury_sedan": {
+      "makes": ["BMW", "Mercedes-Benz", "Audi", "Lexus", "Acura", "Cadillac", "Genesis", "Volvo"],
+      "models": ["3 Series", "C-Class", "A4", "A6", "ES", "IS", "G70", "G80", "CT5", "TLX", "S60"],
+      "traits": ["luxury_brand", "sedan"]
+    },
+    "sports_car": {
+      "models": ["Mustang", "Camaro", "Corvette", "Supra", "GR86", "BRZ", "Miata", "MX-5", "WRX", "370Z", "400Z", "GT-R"],
+      "traits": ["sports_car", "coupe", "performance"]
+    },
+    "minivan": {
+      "models": ["Odyssey", "Sienna", "Pacifica", "Carnival", "Grand Caravan"],
+      "traits": ["minivan", "sliding_doors"]
+    },
+    "electric_vehicle": {
+      "models": ["Model 3", "Model Y", "Model S", "Model X", "Mach-E", "ID.4", "Ioniq 5", "Ioniq 6", "EV6", "Bolt", "Bolt EUV", "Ariya", "Lyriq", "e-tron"],
+      "makes": ["Tesla", "Rivian", "Lucid", "Polestar"],
+      "traits": ["electric", "ev", "battery_electric"]
+    }
+  }
+}

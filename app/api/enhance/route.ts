@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
+import { MODELS, buildEnhancePrompt } from '@/lib/ai-prompts'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY! })
 
@@ -40,9 +41,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 })
     }
 
-    const modelId = body.model === 'pro'
-      ? 'gemini-3-pro-image-preview'
-      : 'gemini-3.1-flash-image-preview'
+    const modelId = body.model === 'pro' ? MODELS.imageHighQuality : MODELS.imageFast
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -53,7 +52,7 @@ export async function POST(req: Request) {
             data: imageData.data,
           },
         },
-        `You are a professional automotive photo editor. Edit this vehicle photo according to this instruction:\n\n${body.instruction}\n\nIMPORTANT RULES:\n- Keep the vehicle EXACTLY as it is — same make, model, color, angle\n- Only modify what the instruction asks for\n- Maintain photorealistic quality suitable for a car dealership listing\n- Do NOT add text, watermarks, or logos to the image\n- Produce a clean, professional result`,
+        buildEnhancePrompt(body.instruction),
       ],
       config: {
         responseModalities: ['IMAGE'],

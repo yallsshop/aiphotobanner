@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type } from '@google/genai'
+import {
+  MODELS, MODEL_SETTINGS, SELLING_POINT_HINTS,
+  ANALYSIS_SYSTEM_INSTRUCTION,
+  buildAnalysisSystemPrompt, buildDistributionStrategy,
+  buildSeoInstructions, ENHANCEMENT_SUGGESTIONS_PROMPT,
+  buildCustomFeaturesPrompt, buildCustomInstructionsPrompt,
+} from '@/lib/ai-prompts'
+import {
+  classifySegment, detectTrimTier, normalizeFeature,
+  rankFeaturesForPhoto, buildRankingPromptContext,
+  type ExtractedFeature, type PhotoType, type RankingContext,
+} from '@/lib/feature-ranker'
 
 // Allow up to 5 minutes for large photo sets analyzed in batches
 export const maxDuration = 300
@@ -76,102 +88,10 @@ interface VehicleContext {
   features?: string[]
 }
 
-// Hot-button features that customers actively search for
-const SELLING_POINT_HINTS = [
-  'HEATED SEATS', 'HEATED STEERING WHEEL', 'COOLED SEATS', 'VENTILATED SEATS',
-  'APPLE CARPLAY', 'ANDROID AUTO', 'WIRELESS CARPLAY',
-  'LEATHER', 'PREMIUM LEATHER', 'LEATHER SEATS',
-  'PANORAMIC ROOF', 'SUNROOF', 'MOONROOF',
-  'BACKUP CAMERA', 'SURROUND VIEW', '360 CAMERA',
-  'BLIND SPOT MONITORING', 'LANE KEEP ASSIST', 'ADAPTIVE CRUISE',
-  'NAVIGATION', 'BUILT-IN NAV',
-  'REMOTE START', 'PUSH BUTTON START', 'KEYLESS ENTRY',
-  'POWER LIFTGATE', 'HANDS-FREE LIFTGATE',
-  'THIRD ROW', '3RD ROW SEATING',
-  'AWD', '4WD', 'ALL WHEEL DRIVE',
-  'TURBO', 'TWIN TURBO', 'ECOBOOST',
-  'TOW PACKAGE', 'TRAILER TOW',
-  'LED HEADLIGHTS', 'PREMIUM AUDIO', 'BOSE', 'HARMAN KARDON', 'B&O',
-  'WIRELESS CHARGING', 'USB-C',
-  'PARKING SENSORS', 'SELF PARKING',
-  'HEADS UP DISPLAY', 'HUD',
-  'PREMIUM WHEELS', 'CHROME WHEELS',
-  'LOW MILES', 'ONE OWNER', 'CLEAN TITLE', 'CERTIFIED',
-]
+// SELLING_POINT_HINTS, prompts, and content rules are now in lib/ai-prompts.ts
 
-function buildBatchPrompt(vehicleContext?: VehicleContext, photoCount?: number, descriptionMustHaves?: string, customFeatures?: string, customInstructions?: string): string {
-  let prompt = `You are a car dealership photo banner AI. You analyze ${photoCount || 'multiple'} photos of the SAME vehicle and generate compelling, ACCURATE banner text that highlights SELLING POINTS customers care about.
-
-ABSOLUTE RULES:
-1. NEVER include price, MSRP, or dollar amounts
-2. NEVER fabricate features — ONLY mention features that are:
-   a) VISIBLE in the specific photo, OR
-   b) CONFIRMED in the vehicle specs provided below
-3. Each photo's banner_text must be UNIQUE — no two photos share the same text
-4. banner_text: MAX 40 characters, ALL CAPS, pipe-separated (e.g. "AWD | HEATED SEATS | LEATHER")
-5. If you can see or confirm a hot-button feature, PRIORITIZE it over generic descriptions
-6. NEVER use profanity or abbreviations that could be misread as profanity
-7. Every word in banner_text must be a SPECIFIC, SEARCHABLE feature or trust signal — not a description of the photo itself
-
-HOT-BUTTON FEATURES (prioritize these when confirmed):
-${SELLING_POINT_HINTS.join(', ')}
-
-=== BANNED PHRASES — NEVER USE THESE ===
-These are FILLER that describes the photo instead of selling the car. If you catch yourself writing any of these, STOP and replace with a real feature:
-- "SLEEK REAR DESIGN", "BOLD FRONT STYLING", "ELEGANT SIDE VIEW", "SLEEK PROFILE"
-- "DRIVER-FOCUSED INTERIOR", "COMFORTABLE REAR CABIN", "SPACIOUS TRUNK"
-- "GENEROUS CARGO SPACE", "MODERN DASHBOARD", "STYLISH DESIGN"
-- "SHARP DESIGN", "CLEAN LINES", "PREMIUM LOOK", "ELEGANT DESIGN"
-- "FRONT PASSENGER SEAT", "REAR SEAT VIEW", "SIDE VIEW"
-- Any phrase that describes WHAT the photo shows rather than a FEATURE the car has
-
-=== BANNED OBVIOUS FEATURES — EVERY CAR HAS THESE ===
-Never waste banner space on: POWER WINDOWS, POWER LOCKS, CUP HOLDERS, SEAT BELTS, AIR CONDITIONING, FLOOR MATS, SUN VISORS, DOME LIGHT, GLOVE BOX, TRUNK RELEASE, MULTI-FUNCTION STEERING WHEEL
-
-=== THE TEST ===
-Before writing banner_text, ask: "Would a buyer search for this on AutoTrader?"
-- "AWD" → YES (buyers filter by this)
-- "HEATED SEATS" → YES (buyers search for this)
-- "COMFORTABLE REAR CABIN" → NO (nobody types this)
-- "POWER WINDOWS" → NO (every car has this)
-- "CHROME TRIM" → NO (not a search term)
-
-PHOTO-SPECIFIC BANNER STRATEGY:
-- Photo 0 (hero shot): Vehicle's TOP 2-3 confirmed selling points (e.g. "AWD | LEATHER | LOW MILES")
-- Exterior photos: drivetrain (AWD/4WD/FWD), LED HEADLIGHTS, PREMIUM WHEELS, TOW PACKAGE — confirmed features
-- Interior/dashboard: CARPLAY | LEATHER | HEATED SEATS | NAVIGATION | PANO ROOF — real features
-- Rear/trunk: POWER LIFTGATE, CARGO LINER, SPLIT-FOLD SEATS — functional features
-- Engine bay: TURBO, ECOBOOST, V6, HYBRID — engine specs
-- Detail shots: Read the BRAND NAME on what you see (e.g. "HARMAN KARDON", "B&O", "BOSE") — do NOT generically say "PREMIUM AUDIO" if you can read the brand. Look for seat control buttons and name the feature: "HEATED SEATS" not "SEAT CONTROLS", "MEMORY SEATS" not "POWER ADJUSTABLE SEATING"
-
-WHAT MAKES GREAT BANNER TEXT:
-- "AWD | PANO ROOF | HEATED SEATS" (specific, searchable selling points)
-- "ECOBOOST | LEATHER | CARPLAY" (features customers filter by)
-- "ONE OWNER | CLEAN TITLE | 22K MI" (trust signals)
-- "HARMAN KARDON | HEATED SEATS" (brand name from detail shot)
-- "LED HEADLIGHTS | M SPORT PKG" (visible confirmed features)
-
-WHAT MAKES BAD BANNER TEXT (NEVER DO THIS):
-- "ELEGANT SIDE VIEW | CHROME ACCENTS" (describes the photo angle)
-- "MODERN DASHBOARD | WOODGRAIN TRIM" (generic, not searchable)
-- "BOLD FRONT STYLING | LED HEADLIGHTS" (half filler, half feature)
-- "COMFORTABLE REAR CABIN" (vague, could be any car)
-- "DRIVER-FOCUSED INTERIOR" (marketing fluff, not a feature)
-- "POWER WINDOW CONTROLS" (every car has this)
-- "MULTI-FUNCTION STEERING WHEEL" (every modern car has this)
-
-When you see an interior shot, look for:
-- Touchscreen size, CarPlay/Android Auto icons on the screen
-- Seat material (leather vs cloth), heated/cooled seat BUTTONS specifically
-- Brand names on speakers (Harman Kardon, B&O, Bose, JBL, Revel)
-- Panoramic roof visible through glass
-- Digital instrument cluster / heads-up display
-
-When you see an exterior shot, look for:
-- Badge/emblem indicating trim level or AWD/4WD
-- LED headlight/taillight design
-- Roof rails, tow hitch, premium wheels
-- Model-specific package badges (M Sport, AMG Line, F Sport, etc.)`
+function buildBatchPrompt(vehicleContext?: VehicleContext, photoCount?: number, descriptionMustHaves?: string, customFeatures?: string, customInstructions?: string, segmentPriorityBlock?: string): string {
+  let prompt = buildAnalysisSystemPrompt(photoCount)
 
   if (vehicleContext) {
     const specs = []
@@ -222,80 +142,22 @@ When you see an exterior shot, look for:
 
   // Custom features pasted by the user (window sticker text, dealer feature list, etc.)
   if (customFeatures) {
-    prompt += `\n\n=== DEALER-PROVIDED FEATURE LIST (HIGH PRIORITY — THESE ARE CONFIRMED) ===
-The dealer pasted these features directly. These are CONFIRMED and should be your PRIMARY source for banner text. Distribute these across photos so each banner is unique:
-
-${customFeatures}
-
-STRATEGY: You have ${photoCount || 'multiple'} photos. Map the top ${Math.min(3, photoCount || 3)} buyer-priority features to the hero shot. Then distribute remaining features across other photos so NO two banners repeat the same feature. Prioritize features buyers actually search for (heated seats, AWD, CarPlay, pano roof, etc.) over basic specs.`
+    prompt += buildCustomFeaturesPrompt(customFeatures, photoCount)
   }
 
   // Custom instructions from the user
   if (customInstructions) {
-    prompt += `\n\n=== DEALER CUSTOM INSTRUCTIONS (FOLLOW THESE) ===
-${customInstructions}`
+    prompt += buildCustomInstructionsPrompt(customInstructions)
   }
 
-  prompt += `\n\n=== BANNER TEXT DISTRIBUTION STRATEGY ===
-You are creating banners for ${photoCount || 'multiple'} photos of the SAME car. The BIGGEST mistake is being repetitive.
+  prompt += buildDistributionStrategy(photoCount)
+  prompt += buildSeoInstructions(descriptionMustHaves)
+  prompt += ENHANCEMENT_SUGGESTIONS_PROMPT
 
-RULES FOR UNIQUENESS:
-1. Before writing ANY banner_text, first make a mental list of ALL confirmed features from specs + dealer-provided list + what you see
-2. Rank them by buyer priority (what would someone filter/search for on AutoTrader?)
-3. Assign the top 2-3 to photo 0 (hero shot)
-4. Distribute the rest across remaining photos — EACH photo gets DIFFERENT features
-5. If you run out of unique features, use trust signals: "LOW MILES", "ONE OWNER", "CLEAN TITLE", "JUST ARRIVED"
-6. NEVER repeat a feature that already appeared on another photo's banner
-
-BUYER-FOCUSED MINDSET:
-Think about what the consumer WORRIES about when buying a used car:
-- Is it reliable? → "CLEAN TITLE | ONE OWNER | LOW MILES"
-- Does it have the tech I want? → "CARPLAY | WIRELESS CHARGING | NAV"
-- Is it comfortable? → "HEATED SEATS | PANO ROOF | LEATHER"
-- Can it do what I need? → "AWD | TOW PKG | 3RD ROW"
-- Is it worth the money? → Name the PREMIUM features that justify the price`
-
-  prompt += `\n\n=== SEO DESCRIPTION INSTRUCTIONS ===
-Write a compelling SEO-optimized vehicle description for the "seo_description" field.
-This will be used on VDP pages (AutoTrader, CarGurus, Cars.com, dealer websites).
-RULES:
-- Plain text paragraph only. NO bullets, NO line breaks, NO markdown, NO HTML.
-- 150-300 words, natural flowing sentences.
-- Lead with the year/make/model/trim and top selling points.
-- Mention key features confirmed from photos and specs (drivetrain, engine, tech, safety, comfort).
-- Include ownership history (1-owner, clean title) and mileage if notable.
-- Use keywords buyers search for naturally (not stuffed).
-- Professional, warm dealership tone — like a knowledgeable salesperson writing the listing.
-- Do NOT include price, payment info, or dealer-specific promotions.`
-
-  if (descriptionMustHaves?.trim()) {
-    prompt += `\n\nDEALERSHIP REQUIRED TEXT — You MUST naturally incorporate the following into the description:\n"${descriptionMustHaves.trim()}"`
+  // Inject segment-aware priority guidance if available
+  if (segmentPriorityBlock) {
+    prompt += segmentPriorityBlock
   }
-
-  prompt += `\n\n=== PHOTO ENHANCEMENT SUGGESTIONS ===
-For each photo, check if AI image editing could improve the listing quality. Add enhancement_suggestions ONLY when there's a real issue worth fixing. Common things to look for:
-
-HIGH priority:
-- Paper floor mats / "THANKS FOR COMING IN" dealer mats visible — suggest removing them
-- Messy or cluttered backgrounds (other cars, trash, people walking by)
-- Dark/underexposed interior shots — suggest brightening
-
-MEDIUM priority:
-- Plain/ugly parking lot background on exterior shots — suggest replacing with clean showroom or studio backdrop
-- Reflections of photographer or equipment visible
-- Minor clutter in trunk/cargo area (bags, tools)
-
-LOW priority:
-- Slightly dull paint that could be enhanced
-- Minor color/exposure corrections
-
-For each suggestion, write a DETAILED instruction that could be sent directly to an AI image editor. Example:
-- action: "Remove paper mats"
-  instruction: "Remove the white paper floor mats from the driver and passenger footwells. Replace them with clean, dark carpeted floor that matches the rest of the interior. Keep everything else exactly the same."
-- action: "Replace background"
-  instruction: "Replace the parking lot background with a clean, professional automotive studio backdrop — neutral gray gradient with soft lighting. Keep the vehicle exactly as-is including reflections on the paint."
-
-Do NOT suggest enhancements for photos that already look clean and professional.`
 
   return prompt
 }
@@ -358,6 +220,42 @@ export async function POST(req: Request) {
     let allInteriorFeatures: string[] = []
     let seoDescription = ''
 
+    // Pre-classify segment to inject priority guidance into prompts
+    let segmentPriorityBlock = ''
+    if (vehicleContext?.make || vehicleContext?.model) {
+      const preClassification = classifySegment({
+        make: vehicleContext.make,
+        model: vehicleContext.model,
+        bodyType: vehicleContext.body_type,
+        fuelType: vehicleContext.fuel_type,
+        drivetrain: vehicleContext.drivetrain,
+        trim: vehicleContext.trim,
+      })
+      // Import segment rules dynamically
+      const segData = (await import('@/lib/knowledge-base/segment-priority-rules.json')).default.segments[preClassification.segment] as {
+        leadPriorities: string[]; tableStakes: string[]; mustMentionSpecs: string[]; valueAngles: string[]
+      } | undefined
+      if (segData) {
+        segmentPriorityBlock = `\n\n=== SEGMENT-AWARE PRIORITY GUIDANCE ===
+Vehicle Segment: ${preClassification.segment}
+${preClassification.modifiers.length > 0 ? `Modifiers: ${preClassification.modifiers.join(', ')}` : ''}
+
+BUYER PRIORITIES for this segment (in order):
+${segData.leadPriorities.map((p, i) => `  ${i + 1}. ${p}`).join('\n')}
+
+TABLE STAKES — do NOT lead with these (every competitor has them):
+${segData.tableStakes.join(', ')}
+
+MUST-MENTION SPECS (for SEO description):
+${segData.mustMentionSpecs.join(', ')}
+
+VALUE ANGLES for this buyer:
+${segData.valueAngles.join(', ')}
+
+Use this priority order when choosing which features go in banner_text.`
+      }
+    }
+
     const batches: { data: string; mimeType: string; ref: string; globalIndex: number }[][] = []
     for (let i = 0; i < imageData.length; i += ANALYSIS_BATCH) {
       batches.push(imageData.slice(i, i + ANALYSIS_BATCH).map((d, j) => ({ ...d, globalIndex: i + j })))
@@ -382,7 +280,7 @@ export async function POST(req: Request) {
       }
 
       // Tell it about already-used banner texts to avoid repetition across batches
-      let batchPrompt = buildBatchPrompt(vehicleContext, batch.length, isLastBatch ? descriptionMustHaves : undefined, customFeatures, customInstructions)
+      let batchPrompt = buildBatchPrompt(vehicleContext, batch.length, isLastBatch ? descriptionMustHaves : undefined, customFeatures, customInstructions, segmentPriorityBlock)
       if (allPhotoResults.length > 0) {
         const usedTexts = allPhotoResults.map(r => r.analysis.banner_text).join(', ')
         batchPrompt += `\n\n=== ALREADY USED BANNER TEXTS (DO NOT REPEAT) ===\nPrevious photos already use: ${usedTexts}\nYou MUST use DIFFERENT features/text for these photos.`
@@ -394,12 +292,14 @@ export async function POST(req: Request) {
       contents.push(batchPrompt)
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: MODELS.analysis,
         contents,
         config: {
+          systemInstruction: ANALYSIS_SYSTEM_INSTRUCTION,
           responseMimeType: 'application/json',
           responseSchema: BATCH_ANALYSIS_SCHEMA,
-          maxOutputTokens: 16384,
+          maxOutputTokens: MODEL_SETTINGS.analysis.maxOutputTokens,
+          thinkingConfig: MODEL_SETTINGS.analysis.thinkingConfig,
         },
       })
 
@@ -431,11 +331,107 @@ export async function POST(req: Request) {
       }
     }
 
+    // ── Post-process: apply knowledge-base ranking to refine banner text ──
+    let segmentInfo: { segment: string; modifiers: string[] } | undefined
+    if (vehicleContext?.make || vehicleContext?.model) {
+      const classification = classifySegment({
+        make: vehicleContext.make,
+        model: vehicleContext.model,
+        bodyType: vehicleContext.body_type,
+        fuelType: vehicleContext.fuel_type,
+        drivetrain: vehicleContext.drivetrain,
+        trim: vehicleContext.trim,
+      })
+      const trimTier = detectTrimTier(vehicleContext.trim)
+      segmentInfo = classification
+
+      // Collect all confirmed features from structured data + AI extraction
+      const allRawFeatures: string[] = [
+        ...allExteriorFeatures,
+        ...allInteriorFeatures,
+        ...(vehicleContext.features || []),
+      ]
+      // Normalize to canonical names
+      const canonicalFeatures: ExtractedFeature[] = []
+      const seen = new Set<string>()
+      for (const raw of allRawFeatures) {
+        const canonical = normalizeFeature(raw)
+        if (canonical && !seen.has(canonical)) {
+          seen.add(canonical)
+          canonicalFeatures.push({
+            feature: canonical,
+            source: 'structured_data',
+            confidence: 0.9,
+            visibleInPhoto: false,
+          })
+        }
+      }
+      // Add trust signals from vehicle context
+      if (vehicleContext.carfax_1_owner) {
+        const f = normalizeFeature('one owner')
+        if (f && !seen.has(f)) { seen.add(f); canonicalFeatures.push({ feature: f, source: 'trust_signal', confidence: 1.0, visibleInPhoto: false }) }
+      }
+      if (vehicleContext.carfax_clean_title) {
+        const f = normalizeFeature('clean title')
+        if (f && !seen.has(f)) { seen.add(f); canonicalFeatures.push({ feature: f, source: 'trust_signal', confidence: 1.0, visibleInPhoto: false }) }
+      }
+      if (vehicleContext.miles && vehicleContext.miles < 30000) {
+        const f = normalizeFeature('low miles')
+        if (f && !seen.has(f)) { seen.add(f); canonicalFeatures.push({ feature: f, source: 'trust_signal', confidence: 1.0, visibleInPhoto: false }) }
+      }
+      if (vehicleContext.drivetrain?.toUpperCase().includes('AWD')) {
+        const f = normalizeFeature('awd')
+        if (f && !seen.has(f)) { seen.add(f); canonicalFeatures.push({ feature: f, source: 'structured_data', confidence: 1.0, visibleInPhoto: false }) }
+      }
+      if (vehicleContext.drivetrain?.toUpperCase().includes('4WD')) {
+        const f = normalizeFeature('4wd')
+        if (f && !seen.has(f)) { seen.add(f); canonicalFeatures.push({ feature: f, source: 'structured_data', confidence: 1.0, visibleInPhoto: false }) }
+      }
+
+      // Re-rank each photo's banner text using the knowledge base
+      const usedFeatures: string[] = []
+      for (const result of allPhotoResults) {
+        // Also add features AI found in this specific photo
+        const photoFeatures = [...canonicalFeatures]
+        for (const visibleRaw of (result.analysis.features || [])) {
+          const canonical = normalizeFeature(visibleRaw)
+          if (canonical && !seen.has(canonical)) {
+            photoFeatures.push({ feature: canonical, source: 'visible_in_photo', confidence: 0.85, visibleInPhoto: true })
+          }
+        }
+
+        // Map AI classification to our photo type
+        const photoType = (result.analysis.classification || 'other') as PhotoType
+
+        const ctx: RankingContext = {
+          segment: classification.segment,
+          modifiers: classification.modifiers,
+          photoType,
+          trimTier: trimTier,
+          alreadyUsedFeatures: usedFeatures,
+        }
+
+        const ranking = rankFeaturesForPhoto(photoFeatures, ctx)
+
+        // Use KB-ranked banner if it produced a meaningful result
+        if (ranking.bannerText && ranking.bannerText !== 'QUALITY PRE-OWNED') {
+          result.analysis.banner_text = ranking.bannerText
+        }
+
+        // Track used features for uniqueness across photos
+        for (const f of ranking.rankedFeatures.slice(0, 3)) {
+          usedFeatures.push(f.feature)
+        }
+      }
+    }
+
     return NextResponse.json({
       results: allPhotoResults,
       exterior_features: allExteriorFeatures,
       interior_features: allInteriorFeatures,
       seo_description: seoDescription,
+      segment: segmentInfo?.segment,
+      modifiers: segmentInfo?.modifiers,
     })
   } catch (error) {
     console.error('Analysis error:', error)
