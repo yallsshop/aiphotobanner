@@ -74,6 +74,8 @@ export default function VehicleDetailPage() {
   const [enhanceModel, setEnhanceModel] = useState<'flash' | 'pro'>('flash')
   const [bannerMode, setBannerMode] = useState<'standard' | 'ai_banner'>('standard')
   const [aiModel, setAiModel] = useState<'pro' | 'flash'>('flash')
+  const [topOnly, setTopOnly] = useState(false)
+  const [imageQuality, setImageQuality] = useState<'1K' | '2K' | '4K'>('1K')
   const [customFeatures, setCustomFeatures] = useState('')
   const [customInstructions, setCustomInstructions] = useState('')
   const [windowStickerFile, setWindowStickerFile] = useState<File | null>(null)
@@ -179,99 +181,111 @@ export default function VehicleDetailPage() {
 
     try {
       const analyzed = photos.filter(p => p.analysis)
+      const brandColor = dealer.brand_colors?.primary || '#d4a053'
+      const secondaryColor = dealer.brand_colors?.secondary || '#ffffff'
+      const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim()
 
-      for (let i = 0; i < analyzed.length; i++) {
-        const photo = analyzed[i]
-        setPhotos(prev => prev.map(p => p.url === photo.url ? { ...p, creating: true } : p))
+      // Mark all as creating
+      setPhotos(prev => prev.map(p => p.analysis ? { ...p, creating: true } : p))
 
-        const res = await fetch('/api/banner/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imageUrl: photo.url,
-            topText: photo.analysis!.banner_text,
-            brandColor: dealer.brand_colors?.primary || '#d4a053',
-            secondaryColor: dealer.brand_colors?.secondary || '#ffffff',
-            dealerName: dealer.name,
-            phone: dealer.phone || '',
-            ...(bannerMode === 'ai_banner' ? {
-              mode: 'ai_banner',
-              aiModel,
-              vehicleName: vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim() : undefined,
-            } : {}),
-          }),
-        })
+      // Build all banner requests
+      const bannerRequests = analyzed.map(photo => ({
+        url: photo.url,
+        body: {
+          imageUrl: photo.url,
+          topText: photo.analysis!.banner_text,
+          brandColor, secondaryColor,
+          dealerName: dealer.name,
+          phone: dealer.phone || '',
+          topOnly,
+          imageQuality,
+          ...(bannerMode === 'ai_banner' ? { mode: 'ai_banner' as const, aiModel, vehicleName } : {}),
+        },
+      }))
 
-        if (!res.ok) throw new Error('Banner creation failed')
+      // Run in parallel batches of 4 for speed
+      const BATCH_SIZE = 4
+      for (let batch = 0; batch < bannerRequests.length; batch += BATCH_SIZE) {
+        const chunk = bannerRequests.slice(batch, batch + BATCH_SIZE)
+        const results = await Promise.allSettled(
+          chunk.map(async (req) => {
+            const res = await fetch('/api/banner/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(req.body),
+            })
+            if (!res.ok) throw new Error('Banner creation failed')
+            const blob = await res.blob()
+            return { url: req.url, blob, blobUrl: URL.createObjectURL(blob) }
+          })
+        )
 
-        const blob = await res.blob()
-        const blobUrl = URL.createObjectURL(blob)
-        setPhotos(prev => prev.map(p =>
-          p.url === photo.url ? { ...p, banneredUrl: blobUrl, banneredBlob: blob, creating: false } : p
-        ))
+        // Update state as each batch completes
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            const { url, blob, blobUrl } = result.value
+            setPhotos(prev => prev.map(p =>
+              p.url === url && !p.banneredUrl ? { ...p, banneredUrl: blobUrl, banneredBlob: blob, creating: false } : p
+            ))
+          }
+        }
       }
 
-      // Create exterior features image
-      const extPhoto = analyzed.find(p =>
-        p.analysis?.classification?.startsWith('exterior')
-      ) || analyzed[0]
+      // Mark any remaining as done
+      setPhotos(prev => prev.map(p => ({ ...p, creating: false })))
+
+      // Feature overlay images — run both in parallel
+      const featurePromises: Promise<void>[] = []
+
+      const extPhoto = analyzed.find(p => p.analysis?.classification?.startsWith('exterior')) || analyzed[0]
       if (extPhoto && exteriorFeatures.length > 0) {
-        const extRes = await fetch('/api/banner/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imageUrl: extPhoto.url,
-            topText: '',
-            brandColor: dealer.brand_colors?.primary || '#d4a053',
-            secondaryColor: dealer.brand_colors?.secondary || '#ffffff',
-            dealerName: dealer.name,
-            mode: 'exterior_features',
-            featuresList: exteriorFeatures,
-            ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
-          }),
-        })
-        if (extRes.ok) {
-          const blob = await extRes.blob()
-          const blobUrl = URL.createObjectURL(blob)
-          setPhotos(prev => [...prev, {
-            url: extPhoto.url,
-            analysis: { classification: 'exterior_features', confidence: 1, banner_text: 'EXTERIOR FEATURES', features: exteriorFeatures },
-            banneredUrl: blobUrl,
-            banneredBlob: blob,
-          }])
-        }
+        featurePromises.push((async () => {
+          const res = await fetch('/api/banner/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageUrl: extPhoto.url, topText: '', brandColor, secondaryColor,
+              dealerName: dealer.name, mode: 'exterior_features',
+              featuresList: exteriorFeatures, imageQuality,
+              ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
+            }),
+          })
+          if (res.ok) {
+            const blob = await res.blob()
+            setPhotos(prev => [...prev, {
+              url: extPhoto.url,
+              analysis: { classification: 'exterior_features', confidence: 1, banner_text: 'EXTERIOR FEATURES', features: exteriorFeatures },
+              banneredUrl: URL.createObjectURL(blob), banneredBlob: blob,
+            }])
+          }
+        })())
       }
 
-      // Create interior features image
-      const intPhoto = analyzed.find(p =>
-        p.analysis?.classification?.startsWith('interior') || p.analysis?.classification === 'dashboard'
-      )
+      const intPhoto = analyzed.find(p => p.analysis?.classification?.startsWith('interior') || p.analysis?.classification === 'dashboard')
       if (intPhoto && interiorFeatures.length > 0) {
-        const intRes = await fetch('/api/banner/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imageUrl: intPhoto.url,
-            topText: '',
-            brandColor: dealer.brand_colors?.primary || '#d4a053',
-            secondaryColor: dealer.brand_colors?.secondary || '#ffffff',
-            dealerName: dealer.name,
-            mode: 'interior_features',
-            featuresList: interiorFeatures,
-            ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
-          }),
-        })
-        if (intRes.ok) {
-          const blob = await intRes.blob()
-          const blobUrl = URL.createObjectURL(blob)
-          setPhotos(prev => [...prev, {
-            url: intPhoto.url,
-            analysis: { classification: 'interior_features', confidence: 1, banner_text: 'INTERIOR FEATURES', features: interiorFeatures },
-            banneredUrl: blobUrl,
-            banneredBlob: blob,
-          }])
-        }
+        featurePromises.push((async () => {
+          const res = await fetch('/api/banner/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageUrl: intPhoto.url, topText: '', brandColor, secondaryColor,
+              dealerName: dealer.name, mode: 'interior_features',
+              featuresList: interiorFeatures, imageQuality,
+              ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
+            }),
+          })
+          if (res.ok) {
+            const blob = await res.blob()
+            setPhotos(prev => [...prev, {
+              url: intPhoto.url,
+              analysis: { classification: 'interior_features', confidence: 1, banner_text: 'INTERIOR FEATURES', features: interiorFeatures },
+              banneredUrl: URL.createObjectURL(blob), banneredBlob: blob,
+            }])
+          }
+        })())
       }
+
+      await Promise.allSettled(featurePromises)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Banner creation failed')
     } finally {
@@ -453,15 +467,36 @@ export default function VehicleDetailPage() {
                 <option value="ai_banner">AI Generated</option>
               </select>
               {bannerMode === 'ai_banner' && (
-                <select
-                  value={aiModel}
-                  onChange={(e) => setAiModel(e.target.value as 'pro' | 'flash')}
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
-                >
-                  <option value="flash">Nano Banana 2 (Fast)</option>
-                  <option value="pro">Nano Banana Pro (Quality)</option>
-                </select>
+                <>
+                  <select
+                    value={aiModel}
+                    onChange={(e) => setAiModel(e.target.value as 'pro' | 'flash')}
+                    className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
+                  >
+                    <option value="flash">Nano Banana 2 (Fast)</option>
+                    <option value="pro">Nano Banana Pro (Quality)</option>
+                  </select>
+                  <select
+                    value={imageQuality}
+                    onChange={(e) => setImageQuality(e.target.value as '1K' | '2K' | '4K')}
+                    className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
+                  >
+                    <option value="1K">1K</option>
+                    <option value="2K">2K</option>
+                    <option value="4K">4K</option>
+                  </select>
+                </>
               )}
+              <button
+                onClick={() => setTopOnly(!topOnly)}
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                  topOnly
+                    ? 'bg-accent/15 text-accent border-accent/30'
+                    : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-zinc-300'
+                }`}
+              >
+                {topOnly ? 'Top Only' : 'Top + Bottom'}
+              </button>
             </div>
           )}
           {hasBannered && !savedToCloud && (

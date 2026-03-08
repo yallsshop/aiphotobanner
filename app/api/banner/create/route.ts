@@ -18,6 +18,8 @@ interface BannerRequest {
   featuresList?: string[]
   vehicleName?: string
   aiModel?: 'pro' | 'flash'
+  topOnly?: boolean
+  imageQuality?: '1K' | '2K' | '4K'
 }
 
 // Profanity + garbage filter — catches truncation artifacts and inappropriate text
@@ -188,6 +190,8 @@ async function createAiBanner(
   brandColor: string,
   vehicleName?: string,
   aiModel: 'pro' | 'flash' = 'pro',
+  topOnly: boolean = false,
+  imageQuality: '1K' | '2K' | '4K' = '1K',
 ): Promise<Buffer | null> {
   const apiKey = process.env.GOOGLE_GENAI_API_KEY
   if (!apiKey) return null
@@ -200,26 +204,28 @@ async function createAiBanner(
 
   const modelId = aiModel === 'flash' ? 'gemini-3.1-flash-image-preview' : 'gemini-3-pro-image-preview'
 
+  const bottomSection = topOnly ? '' : `
+2. BOTTOM BANNER BAR: A dark/black banner bar across the ENTIRE bottom edge (about 6-8% of image height).
+   - Left side: "${dealerLine}" in white text
+   - Right side: "SHIPPING NATIONWIDE" in ${brandColor} colored text
+   - Below that: "BUY FROM ANYWHERE" in smaller grey text`
+
   const prompt = `You are a professional automotive graphic designer creating a car dealership listing photo.
 
-TASK: Add professional dealership banner overlays to this vehicle photo.
+TASK: Add professional dealership banner overlay${topOnly ? '' : 's'} to this vehicle photo.
 
 === WHAT TO ADD ===
 1. TOP BANNER BAR: A solid colored banner bar across the ENTIRE top edge of the image (about 8-10% of image height).
    - Background color: ${brandColor} (with a subtle gradient darker at edges)
    - Text in the center: "${headline}" in bold white uppercase letters
    ${vehicleLabel ? `- Below or beside the headline, smaller: "${vehicleLabel}"` : ''}
-
-2. BOTTOM BANNER BAR: A dark/black banner bar across the ENTIRE bottom edge (about 6-8% of image height).
-   - Left side: "${dealerLine}" in white text
-   - Right side: "SHIPPING NATIONWIDE" in ${brandColor} colored text
-   - Below that: "BUY FROM ANYWHERE" in smaller grey text
+${bottomSection}
 
 === ABSOLUTE RULES — CRITICAL ===
 - The vehicle in the photo must remain COMPLETELY UNCHANGED — same exact color, angle, reflections, shadows, badges, wheels, everything
 - Do NOT alter, retouch, recolor, move, resize, or modify the vehicle in ANY way
 - Do NOT change the background or environment behind the vehicle
-- ONLY add the two banner bars (top and bottom) as opaque overlays on top of the existing image
+- ONLY add the banner bar${topOnly ? '' : 's'} as opaque overlay${topOnly ? '' : 's'} on top of the existing image
 - The banners must be clean, sharp, and professional — like a real dealership overlay
 - Text must be perfectly legible and correctly spelled
 - The banner bars should be opaque (not transparent) — they cover whatever is behind them
@@ -237,7 +243,7 @@ Think of this like placing sticker overlays on top of a photo — the photo unde
       config: {
         responseModalities: ['IMAGE'],
         imageConfig: {
-          imageSize: '1K',
+          imageSize: imageQuality,
         },
       },
     })
@@ -262,6 +268,7 @@ async function createAiFeatureOverlay(
   features: string[],
   brandColor: string,
   aiModel: 'pro' | 'flash' = 'pro',
+  imageQuality: '1K' | '2K' | '4K' = '1K',
 ): Promise<Buffer | null> {
   const apiKey = process.env.GOOGLE_GENAI_API_KEY
   if (!apiKey) return null
@@ -306,7 +313,7 @@ ${featureList}
       config: {
         responseModalities: ['IMAGE'],
         imageConfig: {
-          imageSize: '1K',
+          imageSize: imageQuality,
         },
       },
     })
@@ -353,7 +360,7 @@ export async function POST(req: Request) {
       if (body.aiModel) {
         const base64 = imgBuffer.toString('base64')
         const aiResult = await createAiFeatureOverlay(
-          base64, 'image/jpeg', title, features, brandColor, body.aiModel,
+          base64, 'image/jpeg', title, features, brandColor, body.aiModel, body.imageQuality || '1K',
         )
         if (aiResult) {
           const finalBuffer = await sharp(aiResult).jpeg({ quality: 92 }).toBuffer()
@@ -401,6 +408,8 @@ export async function POST(req: Request) {
         brandColor,
         body.vehicleName,
         body.aiModel || 'pro',
+        body.topOnly || false,
+        body.imageQuality || '1K',
       )
 
       if (aiResult) {
@@ -422,9 +431,8 @@ export async function POST(req: Request) {
     }
 
     // Standard banner mode
-    // Taller top bar (9%) to cover existing dealer watermarks on source photos
     const topHeight = Math.round(height * 0.09)
-    const bottomHeight = Math.round(height * 0.065)
+    const bottomHeight = body.topOnly ? 0 : Math.round(height * 0.065)
     const photoHeight = height - topHeight - bottomHeight
 
     // Sanitize banner text
@@ -436,7 +444,7 @@ export async function POST(req: Request) {
       .toBuffer()
 
     const topSvg = createTopBannerSvg(width, topHeight, cleanText, brandColor, textColor)
-    const bottomSvg = createBottomBannerSvg(width, bottomHeight, body.dealerName, body.phone || '', brandColor)
+    const bottomSvg = body.topOnly ? null : createBottomBannerSvg(width, bottomHeight, body.dealerName, body.phone || '', brandColor)
 
     // Create canvas at normalized dimensions
     const canvas = sharp({
@@ -451,7 +459,7 @@ export async function POST(req: Request) {
     const composites: sharp.OverlayOptions[] = [
       { input: topSvg, top: 0, left: 0 },
       { input: resizedPhoto, top: topHeight, left: 0 },
-      { input: bottomSvg, top: topHeight + photoHeight, left: 0 },
+      ...(bottomSvg ? [{ input: bottomSvg, top: topHeight + photoHeight, left: 0 }] : []),
     ]
 
     const result = await canvas
