@@ -73,6 +73,7 @@ export default function VehicleDetailPage() {
   const [enhancePrompt, setEnhancePrompt] = useState('')
   const [enhanceModel, setEnhanceModel] = useState<'flash' | 'pro'>('flash')
   const [bannerMode, setBannerMode] = useState<'standard' | 'ai_banner'>('standard')
+  const [aiModel, setAiModel] = useState<'pro' | 'flash'>('flash')
   const [customFeatures, setCustomFeatures] = useState('')
   const [customInstructions, setCustomInstructions] = useState('')
   const [windowStickerFile, setWindowStickerFile] = useState<File | null>(null)
@@ -195,6 +196,7 @@ export default function VehicleDetailPage() {
             phone: dealer.phone || '',
             ...(bannerMode === 'ai_banner' ? {
               mode: 'ai_banner',
+              aiModel,
               vehicleName: vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim() : undefined,
             } : {}),
           }),
@@ -225,6 +227,7 @@ export default function VehicleDetailPage() {
             dealerName: dealer.name,
             mode: 'exterior_features',
             featuresList: exteriorFeatures,
+            ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
           }),
         })
         if (extRes.ok) {
@@ -255,6 +258,7 @@ export default function VehicleDetailPage() {
             dealerName: dealer.name,
             mode: 'interior_features',
             featuresList: interiorFeatures,
+            ...(bannerMode === 'ai_banner' ? { aiModel } : {}),
           }),
         })
         if (intRes.ok) {
@@ -446,8 +450,18 @@ export default function VehicleDetailPage() {
                 className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
               >
                 <option value="standard">Standard (SVG)</option>
-                <option value="ai_banner">AI Premium (Nano Banana)</option>
+                <option value="ai_banner">AI Generated</option>
               </select>
+              {bannerMode === 'ai_banner' && (
+                <select
+                  value={aiModel}
+                  onChange={(e) => setAiModel(e.target.value as 'pro' | 'flash')}
+                  className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
+                >
+                  <option value="flash">Nano Banana 2 (Fast)</option>
+                  <option value="pro">Nano Banana Pro (Quality)</option>
+                </select>
+              )}
             </div>
           )}
           {hasBannered && !savedToCloud && (

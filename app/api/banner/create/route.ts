@@ -17,6 +17,7 @@ interface BannerRequest {
   mode?: 'standard' | 'exterior_features' | 'interior_features' | 'ai_banner'
   featuresList?: string[]
   vehicleName?: string
+  aiModel?: 'pro' | 'flash'
 }
 
 // Profanity + garbage filter — catches truncation artifacts and inappropriate text
@@ -81,7 +82,7 @@ function createTopBannerSvg(width: number, height: number, text: string, brandCo
     <rect width="${width}" height="${height}" fill="url(#topGrad)"/>
     <rect width="${width}" height="1" y="${height - 1}" fill="#ffffff" fill-opacity="0.15"/>
     <text x="${width / 2}" y="${height / 2 + fontSize * 0.35}"
-          font-family="InterBlack" font-weight="900"
+          font-family="Arial, Helvetica, sans-serif" font-weight="900"
           font-size="${fontSize}px" fill="${textColor}"
           text-anchor="middle" letter-spacing="2">
       ${escapeXml(text)}
@@ -113,26 +114,26 @@ function createBottomBannerSvg(
     <rect width="${width}" height="${height - accentHeight}" fill="#0d0d0d" y="${accentHeight}"/>
 
     <text x="${leftX}" y="${nameY}"
-          font-family="InterBold" font-weight="700"
+          font-family="Arial, Helvetica, sans-serif" font-weight="700"
           font-size="${nameFontSize}px" fill="#ffffff" fill-opacity="0.95"
           letter-spacing="1">
       ${escapeXml(dealerName.toUpperCase())}
     </text>
     ${phone ? `<text x="${leftX}" y="${phoneY}"
-          font-family="InterBold" font-weight="400"
+          font-family="Arial, Helvetica, sans-serif" font-weight="400"
           font-size="${phoneFontSize}px" fill="${brandColor}" fill-opacity="0.9"
           letter-spacing="0.5">
       ${escapeXml(phone)}
     </text>` : ''}
 
     <text x="${width - 16}" y="${nameY}"
-          font-family="InterBlack" font-weight="900"
+          font-family="Arial, Helvetica, sans-serif" font-weight="900"
           font-size="${shipFontSize}px" fill="${brandColor}"
           text-anchor="end" letter-spacing="1">
       SHIPPING NATIONWIDE
     </text>
     <text x="${width - 16}" y="${phoneY}"
-          font-family="InterBold" font-weight="600"
+          font-family="Arial, Helvetica, sans-serif" font-weight="600"
           font-size="${subFontSize}px" fill="#ffffff" fill-opacity="0.7"
           text-anchor="end" letter-spacing="0.5">
       BUY FROM ANYWHERE
@@ -158,7 +159,7 @@ function createFeatureOverlaySvg(
   const featureLines = features.map((f, i) => {
     const y = startY + titleSize + 30 + (i * lineHeight)
     return `<text x="${padding + 12}" y="${y}"
-          font-family="InterBold" font-weight="600"
+          font-family="Arial, Helvetica, sans-serif" font-weight="600"
           font-size="${featureSize}px" fill="#ffffff" letter-spacing="0.5">
       ${escapeXml('\u2022  ' + f.toUpperCase())}
     </text>`
@@ -168,7 +169,7 @@ function createFeatureOverlaySvg(
     <rect width="${width}" height="${height}" fill="#000000" fill-opacity="0.65"/>
     <rect x="${padding - 8}" y="${startY - titleSize}" width="4" height="${titleSize + 20 + features.length * lineHeight}" fill="${brandColor}" rx="2"/>
     <text x="${padding + 12}" y="${startY}"
-          font-family="InterBlack" font-weight="900"
+          font-family="Arial, Helvetica, sans-serif" font-weight="900"
           font-size="${titleSize}px" fill="${brandColor}" letter-spacing="3">
       ${escapeXml(title)}
     </text>
@@ -186,6 +187,7 @@ async function createAiBanner(
   phone: string,
   brandColor: string,
   vehicleName?: string,
+  aiModel: 'pro' | 'flash' = 'pro',
 ): Promise<Buffer | null> {
   const apiKey = process.env.GOOGLE_GENAI_API_KEY
   if (!apiKey) return null
@@ -195,6 +197,8 @@ async function createAiBanner(
   const headline = sanitizeBannerText(topText)
   const dealerLine = `${dealerName.toUpperCase()}${phone ? '  |  ' + phone : ''}`
   const vehicleLabel = vehicleName ? vehicleName.toUpperCase() : ''
+
+  const modelId = aiModel === 'flash' ? 'gemini-3.1-flash-image-preview' : 'gemini-3-pro-image-preview'
 
   const prompt = `You are a professional automotive graphic designer creating a car dealership listing photo.
 
@@ -225,7 +229,7 @@ Think of this like placing sticker overlays on top of a photo — the photo unde
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-image-preview',
+      model: modelId,
       contents: [
         { inlineData: { mimeType, data: imageBase64 } },
         prompt,
@@ -247,6 +251,75 @@ Think of this like placing sticker overlays on top of a photo — the photo unde
     return null
   } catch (err) {
     console.error('AI banner generation failed:', err)
+    return null
+  }
+}
+
+async function createAiFeatureOverlay(
+  imageBase64: string,
+  mimeType: string,
+  title: string,
+  features: string[],
+  brandColor: string,
+  aiModel: 'pro' | 'flash' = 'pro',
+): Promise<Buffer | null> {
+  const apiKey = process.env.GOOGLE_GENAI_API_KEY
+  if (!apiKey) return null
+
+  const ai = new GoogleGenAI({ apiKey })
+  const modelId = aiModel === 'flash' ? 'gemini-3.1-flash-image-preview' : 'gemini-3-pro-image-preview'
+
+  const featureList = features.slice(0, 15).map(f => `• ${f.toUpperCase()}`).join('\n')
+
+  const prompt = `You are a professional automotive graphic designer. Add a feature list overlay to this vehicle photo.
+
+=== WHAT TO CREATE ===
+Add a semi-transparent dark overlay on the LEFT SIDE of the image (about 40-50% of width) with:
+
+1. TITLE at the top: "${title}" in large bold ${brandColor} colored text
+2. A thin vertical accent line in ${brandColor} on the left edge of the overlay
+3. FEATURE LIST below the title, each on its own line in white text:
+${featureList}
+
+=== STYLE RULES ===
+- The overlay should be dark (black at ~65% opacity) so the car is dimly visible behind it
+- The right side of the image should show the vehicle clearly (no overlay there)
+- Text must be crisp, clean, perfectly spelled, and easy to read
+- Use a clean sans-serif font (like Helvetica or Arial)
+- Title should be noticeably larger than the feature items
+- Feature items should have bullet points (•) and consistent spacing
+- The overall look should be premium and professional — like a luxury car brochure
+- Keep the image the EXACT same size and aspect ratio as the input
+
+=== ABSOLUTE RULES ===
+- Do NOT modify the vehicle photo itself — only ADD the overlay on top
+- All text must be EXACTLY as specified above — no rewording, no extra text
+- Keep it clean and minimal — no decorative elements beyond what's specified`
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: [
+        { inlineData: { mimeType, data: imageBase64 } },
+        prompt,
+      ],
+      config: {
+        responseModalities: ['IMAGE'],
+        imageConfig: {
+          imageSize: '1K',
+        },
+      },
+    })
+
+    const parts = response.candidates?.[0]?.content?.parts || []
+    for (const part of parts) {
+      if (part.inlineData?.data) {
+        return Buffer.from(part.inlineData.data, 'base64')
+      }
+    }
+    return null
+  } catch (err) {
+    console.error('AI feature overlay generation failed:', err)
     return null
   }
 }
@@ -276,7 +349,25 @@ export async function POST(req: Request) {
       const title = body.mode === 'exterior_features' ? 'EXTERIOR FEATURES' : 'INTERIOR FEATURES'
       const features = body.featuresList || []
 
-      // Resize/pad to normalized dimensions
+      // Try AI-generated feature overlay first
+      if (body.aiModel) {
+        const base64 = imgBuffer.toString('base64')
+        const aiResult = await createAiFeatureOverlay(
+          base64, 'image/jpeg', title, features, brandColor, body.aiModel,
+        )
+        if (aiResult) {
+          const finalBuffer = await sharp(aiResult).jpeg({ quality: 92 }).toBuffer()
+          return new Response(new Uint8Array(finalBuffer), {
+            headers: {
+              'Content-Type': 'image/jpeg',
+              'Content-Disposition': `inline; filename="${body.mode}.jpg"`,
+            },
+          })
+        }
+        console.warn('AI feature overlay failed, falling back to SVG')
+      }
+
+      // SVG fallback
       const normalizedPhoto = await sharp(imgBuffer)
         .resize(width, height, { fit: 'contain', background: { r: 30, g: 30, b: 30 } })
         .toBuffer()
@@ -309,6 +400,7 @@ export async function POST(req: Request) {
         body.phone || '',
         brandColor,
         body.vehicleName,
+        body.aiModel || 'pro',
       )
 
       if (aiResult) {
