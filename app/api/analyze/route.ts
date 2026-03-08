@@ -96,7 +96,7 @@ const SELLING_POINT_HINTS = [
   'LOW MILES', 'ONE OWNER', 'CLEAN TITLE', 'CERTIFIED',
 ]
 
-function buildBatchPrompt(vehicleContext?: VehicleContext, photoCount?: number, descriptionMustHaves?: string): string {
+function buildBatchPrompt(vehicleContext?: VehicleContext, photoCount?: number, descriptionMustHaves?: string, customFeatures?: string, customInstructions?: string): string {
   let prompt = `You are a car dealership photo banner AI. You analyze ${photoCount || 'multiple'} photos of the SAME vehicle and generate compelling, ACCURATE banner text that highlights SELLING POINTS customers care about.
 
 ABSOLUTE RULES:
@@ -217,6 +217,41 @@ When you see an exterior shot, look for:
     prompt += `\n\nCombine what you SEE in photos with these CONFIRMED specs. The specs are your source of truth — never contradict them. Use the trim level to infer likely features (e.g. Reserve trim Lincoln = leather + heated seats + premium audio), but note them as "likely" in features_visible if not directly seen.`
   }
 
+  // Custom features pasted by the user (window sticker text, dealer feature list, etc.)
+  if (customFeatures) {
+    prompt += `\n\n=== DEALER-PROVIDED FEATURE LIST (HIGH PRIORITY — THESE ARE CONFIRMED) ===
+The dealer pasted these features directly. These are CONFIRMED and should be your PRIMARY source for banner text. Distribute these across photos so each banner is unique:
+
+${customFeatures}
+
+STRATEGY: You have ${photoCount || 'multiple'} photos. Map the top ${Math.min(3, photoCount || 3)} buyer-priority features to the hero shot. Then distribute remaining features across other photos so NO two banners repeat the same feature. Prioritize features buyers actually search for (heated seats, AWD, CarPlay, pano roof, etc.) over basic specs.`
+  }
+
+  // Custom instructions from the user
+  if (customInstructions) {
+    prompt += `\n\n=== DEALER CUSTOM INSTRUCTIONS (FOLLOW THESE) ===
+${customInstructions}`
+  }
+
+  prompt += `\n\n=== BANNER TEXT DISTRIBUTION STRATEGY ===
+You are creating banners for ${photoCount || 'multiple'} photos of the SAME car. The BIGGEST mistake is being repetitive.
+
+RULES FOR UNIQUENESS:
+1. Before writing ANY banner_text, first make a mental list of ALL confirmed features from specs + dealer-provided list + what you see
+2. Rank them by buyer priority (what would someone filter/search for on AutoTrader?)
+3. Assign the top 2-3 to photo 0 (hero shot)
+4. Distribute the rest across remaining photos — EACH photo gets DIFFERENT features
+5. If you run out of unique features, use trust signals: "LOW MILES", "ONE OWNER", "CLEAN TITLE", "JUST ARRIVED"
+6. NEVER repeat a feature that already appeared on another photo's banner
+
+BUYER-FOCUSED MINDSET:
+Think about what the consumer WORRIES about when buying a used car:
+- Is it reliable? → "CLEAN TITLE | ONE OWNER | LOW MILES"
+- Does it have the tech I want? → "CARPLAY | WIRELESS CHARGING | NAV"
+- Is it comfortable? → "HEATED SEATS | PANO ROOF | LEATHER"
+- Can it do what I need? → "AWD | TOW PKG | 3RD ROW"
+- Is it worth the money? → Name the PREMIUM features that justify the price`
+
   prompt += `\n\n=== SEO DESCRIPTION INSTRUCTIONS ===
 Write a compelling SEO-optimized vehicle description for the "seo_description" field.
 This will be used on VDP pages (AutoTrader, CarGurus, Cars.com, dealer websites).
@@ -283,11 +318,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { images, imageUrls, vehicleContext, descriptionMustHaves } = body as {
+    const { images, imageUrls, vehicleContext, descriptionMustHaves, customFeatures, customInstructions, windowSticker } = body as {
       images?: { data: string; mimeType: string; name: string }[]
       imageUrls?: string[]
       vehicleContext?: VehicleContext
       descriptionMustHaves?: string
+      customFeatures?: string
+      customInstructions?: string
+      windowSticker?: { data: string; mimeType: string }
     }
 
     const imageData: { data: string; mimeType: string; ref: string }[] = []
@@ -310,11 +348,18 @@ export async function POST(req: Request) {
     }
 
     const contents: Array<{ inlineData: { mimeType: string; data: string } } | string> = []
+
+    // Add window sticker first if provided — gives AI full feature context before seeing photos
+    if (windowSticker?.data) {
+      contents.push({ inlineData: { mimeType: windowSticker.mimeType, data: windowSticker.data } })
+      contents.push('[WINDOW STICKER — Read ALL features, packages, and options from this sticker. Use these as CONFIRMED features for banner text.]')
+    }
+
     for (let i = 0; i < imageData.length; i++) {
       contents.push({ inlineData: { mimeType: imageData[i].mimeType, data: imageData[i].data } })
       contents.push(`[Photo ${i}]`)
     }
-    contents.push(buildBatchPrompt(vehicleContext, imageData.length, descriptionMustHaves))
+    contents.push(buildBatchPrompt(vehicleContext, imageData.length, descriptionMustHaves, customFeatures, customInstructions))
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',

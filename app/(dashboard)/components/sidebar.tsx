@@ -65,14 +65,14 @@ export function Sidebar({
   const pathname = usePathname()
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface border-r border-border flex flex-col">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface border-r border-border flex flex-col" style={{ borderImage: 'linear-gradient(to bottom, var(--accent), var(--accent-pink), transparent) 1' }}>
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="paint-shimmer w-9 h-9 rounded-lg flex-shrink-0" />
+          <div className="gradient-shimmer w-9 h-9 rounded-lg flex-shrink-0" />
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-base font-700 tracking-tight leading-tight">
-              AI Photo <span className="text-amber">Banner</span>
+              AI Photo <span className="bg-gradient-to-r from-accent to-accent-pink bg-clip-text text-transparent">Banner</span>
             </h1>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function Sidebar({
           <Link
             key={item.href}
             href={item.href}
-            className={`nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium ${
+            className={`nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer ${
               pathname === item.href || pathname.startsWith(item.href + '/') ? 'active' : 'text-muted hover:text-foreground'
             }`}
           >
@@ -100,7 +100,7 @@ export function Sidebar({
           {logoUrl ? (
             <img src={logoUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center text-xs font-bold text-amber">
+            <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center text-xs font-bold text-accent">
               {dealerName.charAt(0).toUpperCase()}
             </div>
           )}
@@ -112,7 +112,7 @@ export function Sidebar({
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full text-left text-sm text-muted hover:text-danger transition-colors px-2 py-1.5"
+            className="w-full text-left text-sm text-muted hover:text-danger transition-colors px-2 py-1.5 cursor-pointer"
           >
             Sign out
           </button>

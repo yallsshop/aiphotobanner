@@ -8,24 +8,24 @@ export default function AuthLayout({
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-surface items-center justify-center">
         {/* Ambient gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-glow via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-gradient-to-tl from-amber-glow via-transparent to-transparent opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-glow via-transparent to-transparent" />
+        <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-gradient-to-tl from-accent-glow via-transparent to-transparent opacity-50" />
 
         {/* Decorative grid lines */}
         <div className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(var(--amber) 1px, transparent 1px), linear-gradient(90deg, var(--amber) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px)`,
             backgroundSize: '60px 60px'
           }}
         />
 
         <div className="relative z-10 px-16 max-w-lg">
           <div className="mb-8">
-            <div className="paint-shimmer w-12 h-12 rounded-lg mb-6" />
+            <div className="gradient-shimmer w-12 h-12 rounded-lg mb-6" />
             <h1 className="font-[family-name:var(--font-display)] text-4xl font-800 tracking-tight leading-tight">
               AI Photo
               <br />
-              <span className="text-amber">Banner</span>
+              <span className="text-accent">Banner</span>
             </h1>
           </div>
           <p className="text-muted text-lg leading-relaxed">

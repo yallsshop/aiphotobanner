@@ -34,9 +34,9 @@ export default function LoginPage() {
     <div>
       {/* Mobile logo */}
       <div className="lg:hidden mb-10">
-        <div className="paint-shimmer w-10 h-10 rounded-lg mb-4" />
+        <div className="gradient-shimmer w-10 h-10 rounded-lg mb-4" />
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-800 tracking-tight">
-          AI Photo <span className="text-amber">Banner</span>
+          AI Photo <span className="text-accent">Banner</span>
         </h1>
       </div>
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-amber w-full py-3.5 rounded-lg text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full py-3.5 rounded-lg text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -93,7 +93,7 @@ export default function LoginPage() {
 
       <p className="mt-8 text-center text-muted text-sm animate-fade-up" style={{ animationDelay: '400ms' }}>
         Don&apos;t have an account?{' '}
-        <Link href="/signup" className="text-amber hover:text-amber-light transition-colors">
+        <Link href="/signup" className="text-accent hover:text-accent-light transition-colors">
           Create one
         </Link>
       </p>

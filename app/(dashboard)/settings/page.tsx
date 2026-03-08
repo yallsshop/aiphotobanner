@@ -119,7 +119,7 @@ export default function SettingsPage() {
   if (!dealer) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-6 h-6 border-2 border-amber border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -137,7 +137,7 @@ export default function SettingsPage() {
       <section className="animate-fade-up bg-surface border border-border rounded-xl p-6 mb-6" style={{ animationDelay: '100ms' }}>
         <h2 className="font-[family-name:var(--font-display)] text-lg font-600 mb-4">Dealership Logo</h2>
         <div className="flex items-center gap-6">
-          <div className="relative w-24 h-24 rounded-xl border-2 border-dashed border-border hover:border-amber/50 transition-colors flex items-center justify-center overflow-hidden bg-surface-2">
+          <div className="relative w-24 h-24 rounded-xl border-2 border-dashed border-border hover:border-accent/50 transition-colors flex items-center justify-center overflow-hidden bg-surface-2">
             {logoPreview ? (
               <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
             ) : (
@@ -147,7 +147,7 @@ export default function SettingsPage() {
             )}
           </div>
           <div>
-            <label className="btn-amber px-5 py-2.5 rounded-lg text-sm cursor-pointer inline-block">
+            <label className="btn-primary px-5 py-2.5 rounded-lg text-sm cursor-pointer inline-block">
               {uploading ? 'Uploading...' : 'Upload Logo'}
               <input
                 type="file"
@@ -215,7 +215,7 @@ export default function SettingsPage() {
                   setPrimaryColor(preset.primary)
                   setSecondaryColor(preset.secondary)
                 }}
-                className="color-swatch group flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-amber/30 bg-surface-2"
+                className="color-swatch group flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-accent/30 bg-surface-2"
                 title={preset.name}
               >
                 <div className="flex -space-x-1">
@@ -307,7 +307,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="btn-amber px-8 py-3 rounded-lg text-base font-semibold disabled:opacity-50"
+          className="btn-primary px-8 py-3 rounded-lg text-base font-semibold disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>

@@ -73,6 +73,11 @@ export default function VehicleDetailPage() {
   const [enhancePrompt, setEnhancePrompt] = useState('')
   const [enhanceModel, setEnhanceModel] = useState<'flash' | 'pro'>('flash')
   const [bannerMode, setBannerMode] = useState<'standard' | 'ai_banner'>('standard')
+  const [customFeatures, setCustomFeatures] = useState('')
+  const [customInstructions, setCustomInstructions] = useState('')
+  const [windowStickerFile, setWindowStickerFile] = useState<File | null>(null)
+  const [windowStickerPreview, setWindowStickerPreview] = useState<string | null>(null)
+  const [showContextPanel, setShowContextPanel] = useState(true)
 
   const supabase = createClient()
 
@@ -111,6 +116,14 @@ export default function VehicleDetailPage() {
     try {
       const urls = photos.filter(p => !p.analysis).map(p => p.url)
 
+      // Build window sticker data if uploaded
+      let windowStickerData: { data: string; mimeType: string } | undefined
+      if (windowStickerFile) {
+        const buffer = await windowStickerFile.arrayBuffer()
+        const base64 = btoa(new Uint8Array(buffer).reduce((d, b) => d + String.fromCharCode(b), ''))
+        windowStickerData = { data: base64, mimeType: windowStickerFile.type }
+      }
+
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,6 +142,9 @@ export default function VehicleDetailPage() {
             features: vehicle.features,
           },
           descriptionMustHaves: dealer?.description_must_haves || '',
+          customFeatures: customFeatures.trim() || undefined,
+          customInstructions: customInstructions.trim() || undefined,
+          windowSticker: windowStickerData,
         }),
       })
 
@@ -386,7 +402,7 @@ export default function VehicleDetailPage() {
     other: 'bg-gray-500/20 text-gray-400',
   }
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-amber border-t-transparent rounded-full animate-spin" /></div>
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>
   if (!vehicle) return <div className="text-muted">Vehicle not found</div>
 
   const selected = photos[selectedPhoto]
@@ -396,7 +412,7 @@ export default function VehicleDetailPage() {
   return (
     <div>
       <div className="animate-fade-up mb-6 flex items-center gap-2 text-sm text-muted">
-        <Link href="/inventory" className="hover:text-amber transition-colors">Inventory</Link>
+        <Link href="/inventory" className="hover:text-accent transition-colors">Inventory</Link>
         <span>/</span>
         <span className="text-foreground">{vehicle.heading}</span>
         {vehicle.photo_status === 'processed' && (
@@ -412,7 +428,7 @@ export default function VehicleDetailPage() {
         <div className="flex gap-3">
           {!allAnalyzed && (
             <button onClick={handleAnalyze} disabled={processing}
-              className="btn-amber px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
+              className="btn-primary px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
               {processing ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Analyzing {photos.filter(p => !p.analysis).length} photos...</span>
                 : `Analyze ${photos.filter(p => !p.analysis).length} Photos`}
             </button>
@@ -420,14 +436,14 @@ export default function VehicleDetailPage() {
           {allAnalyzed && !hasBannered && (
             <div className="flex items-center gap-3">
               <button onClick={handleCreateBanners} disabled={creatingBanners}
-                className="btn-amber px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
+                className="btn-primary px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
                 {creatingBanners ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Creating Banners...</span>
                   : 'Create Banners'}
               </button>
               <select
                 value={bannerMode}
                 onChange={(e) => setBannerMode(e.target.value as 'standard' | 'ai_banner')}
-                className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-amber-500/50 outline-none"
+                className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2.5 focus:border-accent-500/50 outline-none"
               >
                 <option value="standard">Standard (SVG)</option>
                 <option value="ai_banner">AI Premium (Nano Banana)</option>
@@ -448,12 +464,94 @@ export default function VehicleDetailPage() {
           )}
           {hasBannered && (
             <button onClick={downloadAll}
-              className="btn-amber px-5 py-2.5 rounded-lg text-sm font-semibold">
+              className="btn-primary px-5 py-2.5 rounded-lg text-sm font-semibold">
               Download All ({photos.filter(p => p.banneredUrl).length})
             </button>
           )}
         </div>
       </div>
+
+      {/* Pre-Analysis Context Panel */}
+      {showContextPanel && !allAnalyzed && photos.length > 0 && (
+        <div className="animate-fade-up mb-6 bg-surface border border-accent/20 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+              </svg>
+              <h3 className="font-[family-name:var(--font-display)] text-sm font-600">Pre-Analysis Context</h3>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-accent/15 text-accent border border-accent/20">BETTER RESULTS</span>
+            </div>
+            <button onClick={() => setShowContextPanel(false)} className="text-xs text-muted hover:text-foreground transition-colors">Skip</button>
+          </div>
+
+          <p className="text-xs text-muted mb-4">Give the AI full context about this vehicle before analyzing. The more it knows, the better and less repetitive the banner text will be.</p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Feature list paste box */}
+            <div>
+              <label className="text-xs font-medium text-muted block mb-1.5">Vehicle Features / Options List</label>
+              <textarea
+                value={customFeatures}
+                onChange={(e) => setCustomFeatures(e.target.value)}
+                className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-2 focus:border-accent/50 outline-none resize-none"
+                rows={6}
+                placeholder={"Paste features from the dealer feed, window sticker, or build sheet...\n\nExample:\n- Heated & Ventilated Front Seats\n- Panoramic Moonroof\n- Harman Kardon 12-Speaker Audio\n- Adaptive Cruise Control\n- 20\" Alloy Wheels\n- Wireless Apple CarPlay & Android Auto"}
+              />
+              <p className="text-[10px] text-muted-2 mt-1">Each feature on its own line or comma-separated</p>
+            </div>
+
+            {/* Window sticker upload + instructions */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted block mb-1.5">Window Sticker / Build Sheet</label>
+                <div className="relative">
+                  {windowStickerPreview ? (
+                    <div className="relative rounded-lg overflow-hidden border border-border">
+                      <img src={windowStickerPreview} alt="Window sticker" className="w-full h-32 object-contain bg-white" />
+                      <button
+                        onClick={() => { setWindowStickerFile(null); setWindowStickerPreview(null) }}
+                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs hover:bg-black/90"
+                      >&times;</button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed border-border hover:border-accent/40 cursor-pointer transition-colors bg-surface-2">
+                      <svg className="w-8 h-8 text-muted-2 mb-1" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                      </svg>
+                      <span className="text-xs text-muted">Upload window sticker image</span>
+                      <span className="text-[10px] text-muted-2">JPG, PNG — AI will read all features</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            setWindowStickerFile(file)
+                            setWindowStickerPreview(URL.createObjectURL(file))
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted block mb-1.5">Custom Instructions</label>
+                <textarea
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-2 focus:border-accent/50 outline-none resize-none"
+                  rows={3}
+                  placeholder={"e.g. Focus on the luxury features, mention the warranty, this is a CPO vehicle..."}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 text-danger text-sm bg-danger/10 px-4 py-3 rounded-lg border border-danger/20">{error}</div>
@@ -469,16 +567,16 @@ export default function VehicleDetailPage() {
               {selected.analyzing && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 border-3 border-amber border-t-transparent rounded-full animate-spin" />
-                    <span className="text-amber font-medium">AI Analyzing...</span>
+                    <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span className="text-accent font-medium">AI Analyzing...</span>
                   </div>
                 </div>
               )}
               {selected.creating && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 border-3 border-amber border-t-transparent rounded-full animate-spin" />
-                    <span className="text-amber font-medium">Creating Banner...</span>
+                    <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span className="text-accent font-medium">Creating Banner...</span>
                   </div>
                 </div>
               )}
@@ -494,7 +592,7 @@ export default function VehicleDetailPage() {
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-12 pb-4 px-4">
                     <p className="text-xs text-muted mb-1">Top banner preview:</p>
-                    <p className="text-amber-light font-bold tracking-wider">{selected.analysis.banner_text}</p>
+                    <p className="text-accent-light font-bold tracking-wider">{selected.analysis.banner_text}</p>
                   </div>
                 </>
               )}
@@ -506,7 +604,7 @@ export default function VehicleDetailPage() {
             {photos.map((photo, i) => (
               <button key={i} onClick={() => setSelectedPhoto(i)}
                 className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
-                  i === selectedPhoto ? 'border-amber' : 'border-border hover:border-border-hover'
+                  i === selectedPhoto ? 'border-accent' : 'border-border hover:border-border-hover'
                 }`}>
                 <img src={photo.banneredUrl || photo.url} alt="" className="w-full h-full object-cover" />
                 {photo.analysis && !photo.banneredUrl && (
@@ -518,7 +616,7 @@ export default function VehicleDetailPage() {
                 )}
                 {photo.banneredUrl && (
                   <div className="absolute top-0.5 right-0.5">
-                    <span className="w-3 h-3 rounded-full bg-amber block" />
+                    <span className="w-3 h-3 rounded-full bg-accent block" />
                   </div>
                 )}
               </button>
@@ -542,13 +640,13 @@ export default function VehicleDetailPage() {
                     maxLength={40}
                     autoFocus
                   />
-                  <button onClick={saveEdit} className="btn-amber px-4 py-2 rounded-lg text-sm">Save</button>
+                  <button onClick={saveEdit} className="btn-primary px-4 py-2 rounded-lg text-sm">Save</button>
                   <button onClick={() => setEditingIdx(null)} className="px-4 py-2 rounded-lg text-sm border border-border text-muted hover:text-foreground">Cancel</button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between bg-amber-glow border border-amber/20 rounded-lg px-4 py-3">
-                  <p className="text-amber-light font-bold tracking-wider text-sm">{selected.analysis.banner_text}</p>
-                  <button onClick={() => startEdit(selectedPhoto)} className="text-xs text-muted hover:text-amber transition-colors ml-4">Edit</button>
+                <div className="flex items-center justify-between bg-accent-glow border border-accent/20 rounded-lg px-4 py-3">
+                  <p className="text-accent-light font-bold tracking-wider text-sm">{selected.analysis.banner_text}</p>
+                  <button onClick={() => startEdit(selectedPhoto)} className="text-xs text-muted hover:text-accent transition-colors ml-4">Edit</button>
                 </div>
               )}
 
@@ -573,7 +671,7 @@ export default function VehicleDetailPage() {
                     {selected.analysis.enhancement_suggestions!.map((sug, j) => (
                       <div key={j} className="flex items-center justify-between gap-2 bg-surface-2 rounded-lg px-3 py-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${sug.priority === 'high' ? 'bg-red-400' : sug.priority === 'medium' ? 'bg-amber' : 'bg-muted-2'}`} />
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${sug.priority === 'high' ? 'bg-red-400' : sug.priority === 'medium' ? 'bg-accent' : 'bg-muted-2'}`} />
                           <span className="text-xs text-foreground truncate">{sug.action}</span>
                         </div>
                         <button
@@ -624,7 +722,7 @@ export default function VehicleDetailPage() {
                 <div className="border-t border-border pt-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-violet-400 font-medium">Enhanced Result</p>
-                    <a href={selected.enhancedUrl} download={`enhanced_${selectedPhoto}.png`} className="text-[11px] text-amber hover:text-amber-light transition-colors">Download</a>
+                    <a href={selected.enhancedUrl} download={`enhanced_${selectedPhoto}.png`} className="text-[11px] text-accent hover:text-accent-light transition-colors">Download</a>
                   </div>
                   <img src={selected.enhancedUrl} alt="Enhanced" className="w-full rounded-lg border border-violet-500/20" />
                 </div>
@@ -636,7 +734,7 @@ export default function VehicleDetailPage() {
           {seoDescription && (
             <div className="mt-6 animate-fade-up bg-surface border border-border rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-[family-name:var(--font-display)] text-sm font-600 text-amber">SEO Description</h3>
+                <h3 className="font-[family-name:var(--font-display)] text-sm font-600 text-accent">SEO Description</h3>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(seoDescription)
@@ -646,7 +744,7 @@ export default function VehicleDetailPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     copiedSeo
                       ? 'bg-green-500/15 text-green-400 border border-green-500/20'
-                      : 'bg-surface-3 text-muted hover:text-foreground border border-border hover:border-amber/30'
+                      : 'bg-surface-3 text-muted hover:text-foreground border border-border hover:border-accent/30'
                   }`}
                 >
                   {copiedSeo ? 'Copied!' : 'Copy'}
@@ -722,7 +820,7 @@ export default function VehicleDetailPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Days on Market</span>
-                <span className={`font-medium ${vehicle.dom > 60 ? 'text-danger' : vehicle.dom > 30 ? 'text-amber' : 'text-success'}`}>{vehicle.dom}d</span>
+                <span className={`font-medium ${vehicle.dom > 60 ? 'text-danger' : vehicle.dom > 30 ? 'text-accent' : 'text-success'}`}>{vehicle.dom}d</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">1-Owner</span>
@@ -742,7 +840,7 @@ export default function VehicleDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Bannered</span>
-                <span className={photos.filter(p => p.banneredUrl).length > 0 ? 'text-amber' : ''}>{photos.filter(p => p.banneredUrl).length}</span>
+                <span className={photos.filter(p => p.banneredUrl).length > 0 ? 'text-accent' : ''}>{photos.filter(p => p.banneredUrl).length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Processing</span>
@@ -775,7 +873,7 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
               </div>
-              <Link href="/settings" className="text-xs text-amber hover:text-amber-light transition-colors mt-3 block">
+              <Link href="/settings" className="text-xs text-accent hover:text-accent-light transition-colors mt-3 block">
                 Edit branding
               </Link>
             </div>

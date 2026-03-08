@@ -137,15 +137,15 @@ export default function PhotosPage() {
         {...getRootProps()}
         className={`animate-fade-up border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
           isDragActive
-            ? 'border-amber bg-amber-glow'
-            : 'border-border hover:border-amber/30 hover:bg-surface'
+            ? 'border-accent bg-accent-glow'
+            : 'border-border hover:border-accent/30 hover:bg-surface'
         }`}
         style={{ animationDelay: '100ms' }}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-amber-glow flex items-center justify-center">
-            <svg className="w-8 h-8 text-amber" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="w-16 h-16 rounded-2xl bg-accent-glow flex items-center justify-center">
+            <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
             </svg>
           </div>
@@ -179,7 +179,7 @@ export default function PhotosPage() {
             <button
               onClick={handleProcess}
               disabled={processing || photos.every(p => !!p.analysis)}
-              className="btn-amber px-6 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary px-6 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {processing ? (
                 <span className="flex items-center gap-2">
@@ -209,8 +209,8 @@ export default function PhotosPage() {
                   {photo.analyzing && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                       <div className="flex flex-col items-center gap-3">
-                        <div className="w-8 h-8 border-2 border-amber border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-amber">Analyzing...</span>
+                        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-accent">Analyzing...</span>
                       </div>
                     </div>
                   )}
@@ -248,8 +248,8 @@ export default function PhotosPage() {
                 {photo.analysis ? (
                   <div className="p-4 space-y-3">
                     {/* Banner text */}
-                    <div className="bg-amber-glow border border-amber/20 rounded-lg px-3 py-2">
-                      <p className="text-xs text-amber-light font-semibold tracking-wide">
+                    <div className="bg-accent-glow border border-accent/20 rounded-lg px-3 py-2">
+                      <p className="text-xs text-accent-light font-semibold tracking-wide">
                         {photo.analysis.banner_text}
                       </p>
                     </div>

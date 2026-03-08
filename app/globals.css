@@ -1,23 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #e8e4df;
-  --surface: #141414;
-  --surface-2: #1a1a1a;
-  --surface-3: #222222;
-  --border: #2a2a2a;
-  --border-hover: #3a3a3a;
-  --amber: #d4a053;
-  --amber-light: #e8b96a;
-  --amber-dark: #b8862f;
-  --amber-glow: rgba(212, 160, 83, 0.15);
-  --amber-glow-strong: rgba(212, 160, 83, 0.3);
-  --muted: #888880;
-  --muted-2: #555550;
-  --danger: #e05252;
-  --success: #4ade80;
+  --background: #0F0F14;
+  --foreground: #F0EDF6;
+  --surface: #1A1A24;
+  --surface-2: #22222E;
+  --surface-3: #2A2A38;
+  --border: #2E2E3E;
+  --border-hover: #3E3E52;
+  --accent: #7C3AED;
+  --accent-light: #A78BFA;
+  --accent-dark: #6D28D9;
+  --accent-pink: #EC4899;
+  --accent-glow: rgba(124, 58, 237, 0.15);
+  --accent-glow-strong: rgba(124, 58, 237, 0.3);
+  --muted: #8B8B9E;
+  --muted-2: #5C5C72;
+  --danger: #EF4444;
+  --success: #22C55E;
+  --warning: #F59E0B;
 }
 
 @theme inline {
@@ -28,17 +30,19 @@
   --color-surface-3: var(--surface-3);
   --color-border: var(--border);
   --color-border-hover: var(--border-hover);
-  --color-amber: var(--amber);
-  --color-amber-light: var(--amber-light);
-  --color-amber-dark: var(--amber-dark);
-  --color-amber-glow: var(--amber-glow);
-  --color-amber-glow-strong: var(--amber-glow-strong);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-glow: var(--accent-glow);
+  --color-accent-glow-strong: var(--accent-glow-strong);
   --color-muted: var(--muted);
   --color-muted-2: var(--muted-2);
   --color-danger: var(--danger);
   --color-success: var(--success);
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --color-warning: var(--warning);
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
 }
 
 body {
@@ -47,23 +51,23 @@ body {
   font-family: var(--font-body);
 }
 
-/* Animated gradient — car paint shimmer */
-@keyframes paint-shift {
+/* Animated gradient shimmer — violet to pink */
+@keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
 
-.paint-shimmer {
+.gradient-shimmer {
   background: linear-gradient(
     135deg,
-    var(--amber-dark) 0%,
-    var(--amber) 25%,
-    var(--amber-light) 50%,
-    var(--amber) 75%,
-    var(--amber-dark) 100%
+    var(--accent-dark) 0%,
+    var(--accent) 25%,
+    var(--accent-pink) 50%,
+    var(--accent) 75%,
+    var(--accent-dark) 100%
   );
   background-size: 200% 200%;
-  animation: paint-shift 6s ease-in-out infinite;
+  animation: gradient-shift 6s ease-in-out infinite;
 }
 
 /* Subtle noise texture overlay */
@@ -80,19 +84,33 @@ body {
   z-index: 9999;
 }
 
-/* Glow effect for primary buttons */
-.btn-amber {
-  background: linear-gradient(135deg, var(--amber-dark), var(--amber));
-  color: #0a0a0a;
+/* Primary button with gradient */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+  color: #ffffff;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px var(--amber-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px var(--accent-glow);
 }
 
-.btn-amber:hover {
-  background: linear-gradient(135deg, var(--amber), var(--amber-light));
-  box-shadow: 0 0 30px var(--amber-glow-strong);
+.btn-primary:hover {
+  box-shadow: 0 0 40px var(--accent-glow-strong), 0 4px 12px rgba(0,0,0,0.4);
   transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(26, 26, 36, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* Input styling */
@@ -104,8 +122,8 @@ body {
 }
 
 .input-dark:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px var(--amber-glow);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
   outline: none;
 }
 
@@ -117,12 +135,22 @@ body {
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+  50% { box-shadow: 0 0 40px var(--accent-glow-strong); }
 }
 
 .animate-fade-up {
@@ -138,13 +166,13 @@ body {
 
 .nav-link:hover {
   background: var(--surface-2);
-  border-left-color: var(--amber);
+  border-left-color: var(--accent);
 }
 
 .nav-link.active {
-  background: var(--amber-glow);
-  border-left-color: var(--amber);
-  color: var(--amber-light);
+  background: var(--accent-glow);
+  border-left-color: var(--accent);
+  color: var(--accent-light);
 }
 
 /* Color swatch picker */
@@ -173,4 +201,12 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-2);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
